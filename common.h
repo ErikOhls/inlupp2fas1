@@ -8,13 +8,13 @@ typedef union element elem_t;
 /// Element wrapper
 ///
 /// Elements in the list are stored inside an elem_t which is
-/// passed in by copy. 
+/// passed in by copy.
 ///
 union element
 {
-  int           i; 
+  int           i;
   unsigned int  u;
-  void         *p; 
+  void         *p;
   float         f;
 };
 
