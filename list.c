@@ -22,6 +22,19 @@ struct list{
 
   int size;
 };
+/// Converts any number to a valid index
+int index_correction(list_t *list, int index)
+{
+  if(index > list->size)              // Om index > än lista, ändra index
+    {
+      index = -1;
+    }
+  if(index < 0)                       // Om index är negativ, ommvandla till posetiv
+    {
+      index = index + 1 + list->size;
+    }
+  return index;
+}
 
 /// Creates a new list
 ///
@@ -64,9 +77,12 @@ node_t *node_new(elem_t elem, node_t *next)
 /// \param elem  the element to be inserted
 void list_insert(list_t *list, int index, elem_t elem)
 {
+  index = index_correction(list, index);
+
+  printf("index = %d, list->size = %d\n", index, list->size);
+
   if(list->first == NULL)                 // Om tom lista
     {
-      puts("Inserting in empty list\n");
       list->first = node_new(list->copy(elem), NULL);
       list->last = list->first;
       ++list->size;
@@ -75,7 +91,6 @@ void list_insert(list_t *list, int index, elem_t elem)
     {
       if(index == 0)                          // Om ny första position
         {
-          puts("Inserting at first position in list\n");
           node_t *new_first = node_new(list->copy(elem), list->first);
           list->first = new_first;
           ++list->size;
@@ -83,22 +98,13 @@ void list_insert(list_t *list, int index, elem_t elem)
       else
         {
           node_t **cursor = &(list->first);
-          if(index > list->size)              // Om index > än lista, ändra index
-            {
-              index = -1;
-            }
-          if(index < 0)                       // Om index är negativ, ommvandla till posetiv
-            {
-              index = index + 1 + list->size;
-            }
           for(int i = 0; i < index; i++)
             {
-              cursor = &((*cursor)->next);
+                  cursor = &((*cursor)->next);
             }
           *cursor = node_new(list->copy(elem), *cursor);
-          if(index == list->size)             // Om ny sista position
+          if(index == list->size-1)             // Om ny sista position
             {
-              puts("inserting in last position of list\n");
               list->last = list->last->next;
             }
           ++list->size;
@@ -130,6 +136,18 @@ void list_prepend(list_t *list, elem_t elem)
   list_insert(list, 0, elem);
 }
 
+/// Finds a element from a given index
+node_t **find_in_list(list_t *list, int index)
+{
+  node_t **cursor = &(list->first);
+  index = index_correction(list, index);
+  for(int i = 0; i < index; i ++)
+    {
+      cursor = &((*cursor)->next);
+    }
+  return cursor;
+}
+
 /// Removes an element from a list.
 ///
 /// All indexes are valid. 0 means first element. Negative indexes
@@ -141,18 +159,40 @@ void list_prepend(list_t *list, elem_t elem)
 /// \param delete if true, run list's free function on all elements
 void list_remove(list_t *list, int index, bool delete)
 {
+  index = index_correction(list, index);
   if(list->size == 0)                       // Tom lista
     {
       return;
     }
   if(delete)                                // Delete all
     {
-      //list_apply(TODO: delete_elem function);
+      node_t **cursor = &(list->first);
+      for(int i = 0; i < list->size; i++)
+        {
+          list->free((*cursor)->elem);
+          cursor = &((*cursor)->next);
+        }
       return;
     }
   else                                      // Delete @ index
     {
-      
+      if(index == list->size) --index;      // NOTE: Ingen aning om varför detta måste göras.
+      // NOTE: Varför funkar detta utan att peka om list->first!?
+      node_t **cursor = find_in_list(list, index);
+      node_t *to_delete = *cursor;
+      printf("index = %d, list->size = %d\n", index, list->size);
+      if(index == list->size-1)             // Om sista positionen, peka om list->last
+        {
+          node_t **new_last = find_in_list(list, -2);
+          list->last = *new_last;
+        }
+      else                                  // Annars peka "över" bortagna element
+        {
+          *cursor = (*cursor)->next;
+        }
+      list->free((to_delete)->elem);
+      free(to_delete);
+      --list->size;
       return;
     }
 }
@@ -166,22 +206,18 @@ bool list_get(list_t *list, int index, elem_t *result)
 {
   if(index < 0 || index > list->size)
     {
-      puts("index out of bounds\n");
       return false;
     }
   else
     {
-      puts("index in bounds\n");
       node_t **cursor = &(list->first);
       for(int i = 0; i < index; i++)
         {
-          puts("iterating\n");
           cursor = &((*cursor)->next);
         }
-      puts("assigning result\n");
       result = &((*cursor)->elem);
-      //puts("printing element:\n");
-      printf("elem @ index %d is %d\n", index, result); // Sketchy
+      int tmp = (*cursor)->elem.i;
+      printf("elem @ index %d is %d\n", index, tmp); // Sketchy, funkar bara på int
       return true;
     }
 }
@@ -226,14 +262,19 @@ void list_delete(list_t *list, bool delete)
 /// \returns the result of all fun calls, combined with OR (||)
 bool list_apply(list_t *list, elem_apply_fun fun, void *data)
 {
-  // TODO: Fixa så detta funkar som det ska
   node_t *cursor = list->first;
+  bool success = false;
+  bool success_store = false;;
   for(int i = 0; i < list->size; i++)
     {
-      fun(cursor->elem, data);
+      success = fun(cursor->elem, data);
       cursor = cursor->next;
+      if(success)
+        {
+          success_store = true;
+        }
     }
-  return true;
+  return success_store;
 }
 
 /// Searches for an element in a list
