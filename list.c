@@ -29,9 +29,9 @@ int index_correction(list_t *list, int index)
     {
       index = index + 1 + list->size;
     }
-  if(index > list->size)              // Om index > än lista, ändra index
+  if(index > list->size-1)              // Om index > än lista, ändra index
     {
-      index = -1;
+      index = list->size;
     }
   return index;
 }
@@ -78,8 +78,6 @@ node_t *node_new(elem_t elem, node_t *next)
 void list_insert(list_t *list, int index, elem_t elem)
 {
   index = index_correction(list, index);
-
-  printf("index = %d, list->size = %d\n", index, list->size);
 
   if(list->first == NULL)                 // Om tom lista
     {
@@ -141,7 +139,7 @@ node_t **find_in_list(list_t *list, int index)
 {
   node_t **cursor = &(list->first);
   index = index_correction(list, index);
-  for(int i = 0; i < index; i ++)
+  for(int i = 0; i < index; i++)
     {
       cursor = &((*cursor)->next);
     }
@@ -164,23 +162,13 @@ void list_remove(list_t *list, int index, bool delete)
     {
       return;
     }
-  if(delete)                                // Delete all
-    {
-      node_t **cursor = &(list->first);
-      for(int i = 0; i < list->size; i++)
-        {
-          list->free((*cursor)->elem);
-          cursor = &((*cursor)->next);
-        }
-      return;
-    }
   else                                      // Delete @ index
     {
-      if(index == list->size) --index;      // NOTE: Ingen aning om varför detta måste göras.
+      if(index >= list->size) index = list->size-1;
       // NOTE: Varför funkar detta utan att peka om list->first!?
       node_t **cursor = find_in_list(list, index);
       node_t *to_delete = *cursor;
-      printf("index = %d, list->size = %d\n", index, list->size);
+      //printf("index = %d, list->size = %d\n", index, list->size);
       if(index == list->size-1)             // Om sista positionen, peka om list->last
         {
           node_t **new_last = find_in_list(list, -2);
@@ -190,7 +178,10 @@ void list_remove(list_t *list, int index, bool delete)
         {
           *cursor = (*cursor)->next;
         }
-      list->free((to_delete)->elem);
+      if(delete)
+        {
+          list->free((to_delete)->elem);
+        }
       free(to_delete);
       --list->size;
       return;
@@ -251,7 +242,22 @@ int list_length(list_t *list)
 /// \param delete if true, use list's free function to free elements
 void list_delete(list_t *list, bool delete)
 {
-  return;
+  if(list == NULL)
+    {
+      return;
+    }
+
+  if(list->first == NULL)
+    {
+      //free(list);  // Blir knas som fan
+      return;
+    }
+
+  for(int i = 0; i < list->size-1; i++)
+    {
+      list_remove(list, i, delete);
+    }
+  free(list);
 }
 
 /// Applies a function to all elements in a list in list order
@@ -286,5 +292,18 @@ bool list_apply(list_t *list, elem_apply_fun fun, void *data)
 /// \returns the index of elem in list, or -1 if not found
 int list_contains(list_t *list, elem_t elem)
 {
-  return 0;
+  if(list == NULL || list->first == NULL)
+    {
+      return -1;
+    }
+  node_t **cursor = &(list->first);
+  for(int i = 0; i < list->size-1; i++)
+    {
+      if(list->compare(elem, (*cursor)->elem) == 0)
+        {
+          return i;
+        }
+      cursor = &((*cursor)->next);
+    }
+  return -1;
 }

@@ -153,7 +153,7 @@ int main(int argc, char **argv)
   list_t *the_list = list_new(copy_func, free_func, comp_func);
 
   list_insert(the_list, 0, elem1);
-
+  
   list_insert(the_list, 1, elem2);
   list_insert(the_list, 2, elem3);
   list_insert(the_list, 3, elem4);
@@ -166,19 +166,29 @@ int main(int argc, char **argv)
 
   puts("running list get\n");
   elem_t retrieved;
-  list_get(the_list, 2, &retrieved);
+  list_get(the_list, 6, &retrieved);
 
   puts("printing retrieved elem\n");
-  print_tmp(retrieved);  // Funkar ej
+  print_tmp(retrieved);
 
   list_apply(the_list, print_func, NULL);
-
+  /*
   puts("running remove\n");
-  list_remove(the_list, 1000, true);
+  list_remove(the_list, 6, true);
 
   puts("printing list:\n");
   list_apply(the_list, print_func, NULL);
 
+  puts("running delete\n");
+  list_delete(the_list, true);
+
+  puts("running delete again\n");
+  list_delete(the_list, true);
+  */
+
+  puts("list_contains:\n");
+  int i = list_contains(the_list, elem9);
+  printf("%d\n", i);
   return 0;
 }
 
