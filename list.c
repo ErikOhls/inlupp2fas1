@@ -25,13 +25,13 @@ struct list{
 /// Converts any number to a valid index
 int index_correction(list_t *list, int index)
 {
-  if(index > list->size)              // Om index > än lista, ändra index
-    {
-      index = -1;
-    }
   if(index < 0)                       // Om index är negativ, ommvandla till posetiv
     {
       index = index + 1 + list->size;
+    }
+  if(index > list->size)              // Om index > än lista, ändra index
+    {
+      index = -1;
     }
   return index;
 }
@@ -156,7 +156,7 @@ node_t **find_in_list(list_t *list, int index)
 ///
 /// \param list  pointer to the list
 /// \param index the index to be removed
-/// \param delete if true, run list's free function on all elements
+/// \param delete if true, run list's free function on the removed element
 void list_remove(list_t *list, int index, bool delete)
 {
   index = index_correction(list, index);
@@ -215,9 +215,9 @@ bool list_get(list_t *list, int index, elem_t *result)
         {
           cursor = &((*cursor)->next);
         }
-      result = &((*cursor)->elem);
-      int tmp = (*cursor)->elem.i;
-      printf("elem @ index %d is %d\n", index, tmp); // Sketchy, funkar bara på int
+      *result = ((*cursor)->elem);
+      //int tmp = (*cursor)->elem.i;
+      //printf("elem @ index %d is %d\n", index, tmp); // Sketchy, funkar bara på int
       return true;
     }
 }

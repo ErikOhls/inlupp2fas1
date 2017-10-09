@@ -133,6 +133,11 @@ bool print_func(elem_t elem, void *data)
   return true;
 }
 
+void print_tmp(elem_t elem)
+{
+  printf("element found = %s\n", ((shelf_t *)elem.p)->name);
+}
+
 int main(int argc, char **argv)
 {
   elem_t elem1 = { .p = new_shelf("ett", 0) };
@@ -157,11 +162,15 @@ int main(int argc, char **argv)
   list_append(the_list, elem6);
   list_insert(the_list, 1000, elem7);
 
+  list_apply(the_list, print_func, NULL);
+
   puts("running list get\n");
-  elem_t *retrieved;
-  list_get(the_list, 6, retrieved);
-  //puts("retrieved elem = ");
-  //print_func(*retrieved, NULL);  // Funkar ej
+  elem_t retrieved;
+  list_get(the_list, 2, &retrieved);
+
+  puts("printing retrieved elem\n");
+  print_tmp(retrieved);  // Funkar ej
+
   list_apply(the_list, print_func, NULL);
 
   puts("running remove\n");
