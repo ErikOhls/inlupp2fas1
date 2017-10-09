@@ -247,13 +247,7 @@ void list_delete(list_t *list, bool delete)
       return;
     }
 
-  if(list->first == NULL)
-    {
-      //free(list);  // Blir knas som fan
-      return;
-    }
-
-  for(int i = 0; i < list->size-1; i++)
+  for(int i = 0; i < list->size; i++)
     {
       list_remove(list, i, delete);
     }
@@ -297,7 +291,7 @@ int list_contains(list_t *list, elem_t elem)
       return -1;
     }
   node_t **cursor = &(list->first);
-  for(int i = 0; i < list->size-1; i++)
+  for(int i = 0; i < list->size; i++)
     {
       if(list->compare(elem, (*cursor)->elem) == 0)
         {

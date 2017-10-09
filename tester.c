@@ -140,55 +140,64 @@ void print_tmp(elem_t elem)
 
 int main(int argc, char **argv)
 {
-  elem_t elem1 = { .p = new_shelf("ett", 0) };
-  elem_t elem2 = { .p = new_shelf("två", 1) };
-  elem_t elem3 = { .p = new_shelf("tre", 2) };
-  elem_t elem4 = { .p = new_shelf("fyra", 3) };
-  elem_t elem5 = { .p = new_shelf("fem", 4) };
-  elem_t elem6 = { .p = new_shelf("sex", 5) };
-  elem_t elem7 = { .p = new_shelf("sju", 6) };
-  elem_t elem8 = { .p = new_shelf("åtta", 7) };
-  elem_t elem9 = { .p = new_shelf("ni0", 8) };
+  bool list = true;
+  if(list)
+    {
 
-  list_t *the_list = list_new(copy_func, free_func, comp_func);
+      elem_t elem1 = { .p = new_shelf("ett", 0) };
+      elem_t elem2 = { .p = new_shelf("två", 1) };
+      elem_t elem3 = { .p = new_shelf("tre", 2) };
+      elem_t elem4 = { .p = new_shelf("fyra", 3) };
+      elem_t elem5 = { .p = new_shelf("fem", 4) };
+      elem_t elem6 = { .p = new_shelf("sex", 5) };
+      elem_t elem7 = { .p = new_shelf("sju", 6) };
+      elem_t elem8 = { .p = new_shelf("åtta", 7) };
+      elem_t elem9 = { .p = new_shelf("ni0", 8) };
 
-  list_insert(the_list, 0, elem1);
-  
-  list_insert(the_list, 1, elem2);
-  list_insert(the_list, 2, elem3);
-  list_insert(the_list, 3, elem4);
+      list_t *the_list = list_new(copy_func, free_func, comp_func);
 
-  list_prepend(the_list, elem5);
-  list_append(the_list, elem6);
-  list_insert(the_list, 1000, elem7);
+      list_insert(the_list, 0, elem1);
 
-  list_apply(the_list, print_func, NULL);
+      list_insert(the_list, 1, elem2);
+      list_insert(the_list, 2, elem3);
+      list_insert(the_list, 3, elem4);
 
-  puts("running list get\n");
-  elem_t retrieved;
-  list_get(the_list, 6, &retrieved);
+      list_prepend(the_list, elem5);
+      list_append(the_list, elem6);
+      list_insert(the_list, 1000, elem7);
 
-  puts("printing retrieved elem\n");
-  print_tmp(retrieved);
+      list_apply(the_list, print_func, NULL);
 
-  list_apply(the_list, print_func, NULL);
-  /*
-  puts("running remove\n");
-  list_remove(the_list, 6, true);
+      puts("running list get\n");
+      elem_t retrieved;
+      list_get(the_list, 6, &retrieved);
 
-  puts("printing list:\n");
-  list_apply(the_list, print_func, NULL);
+      puts("printing retrieved elem\n");
+      print_tmp(retrieved);
 
-  puts("running delete\n");
-  list_delete(the_list, true);
+      list_apply(the_list, print_func, NULL);
 
-  puts("running delete again\n");
-  list_delete(the_list, true);
-  */
+      puts("running remove\n");
+      list_remove(the_list, 6, true);
 
-  puts("list_contains:\n");
-  int i = list_contains(the_list, elem9);
-  printf("%d\n", i);
+      puts("printing list:\n");
+      list_apply(the_list, print_func, NULL);
+
+      puts("running delete\n");
+      list_delete(the_list, true);
+
+      puts("running delete again\n");
+      //list_delete(the_list, true);
+      /*
+      puts("list_contains:\n");
+      int i = list_contains(the_list, elem1);
+      printf("%d\n", i);
+      */
+    }
+  else
+    {
+      
+    }
   return 0;
 }
 
