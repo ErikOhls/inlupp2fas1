@@ -1,8 +1,31 @@
 #include <stdbool.h>
+#include <stdlib.h>
 #include "common.h"
 
-/// Define struct tree in your .c file not here! (why?)
+typedef elem_t tree_key_t;
+typedef element_free_fun key_free_fun;
+
+typedef struct node node_t;
+
+struct node{
+  node_t *left;
+  node_t *right;
+  elem_t  key; // Eller?
+  elem_t  elem;
+};
+
 typedef struct tree tree_t;
+
+struct tree{
+  node_t *root;
+  int     size;
+
+  element_copy_fun copy;
+  key_free_fun     free_key;
+  element_free_fun free_elem;
+  element_comp_fun compare;
+
+};
 
 /// Creates a new tree
 ///
@@ -13,7 +36,16 @@ typedef struct tree tree_t;
 /// \returns: empty tree
 tree_t *tree_new(element_copy_fun element_copy, key_free_fun key_free, element_free_fun elem_free, element_comp_fun compare)
 {
-  
+  tree_t *result = calloc(1, sizeof(tree_t));
+
+  result->size = 0;
+
+  result->copy      = element_copy;
+  result->free_key  = key_free;
+  result->free_elem = elem_free;
+  result->compare   = compare;
+
+  return result;
 }
 
 /// Remove a tree along with all elem_t elements.
@@ -31,7 +63,7 @@ void tree_delete(tree_t *tree, bool delete_keys, bool delete_elements)
 /// \returns: the number of nodes in the tree
 int tree_size(tree_t *tree)
 {
-  return 0;
+  return tree->size;
 }
 
 /// Get the depth of the tree 
