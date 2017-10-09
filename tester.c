@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 }
 */
 
-/// Struct version
+/// Struct list version
 
 struct shelf{
   char *name;
@@ -96,7 +96,7 @@ shelf_t *new_shelf(char* name, int amount)
   new_shelf->amount = amount;
   return new_shelf;
 }
-
+/*
 elem_t copy_func(elem_t elem)
 {
   shelf_t *from = elem.p;
@@ -137,13 +137,49 @@ void print_tmp(elem_t elem)
 {
   printf("element found = %s\n", ((shelf_t *)elem.p)->name);
 }
+*/
+
+/// TREE Int version
+
+elem_t copy_func(elem_t elem)
+{
+  return elem;
+}
+
+void free_func(elem_t elem)
+{
+  return;
+}
+
+int comp_func(elem_t elem, elem_t elem2)
+{
+  if(elem.i > elem2.i)
+    {
+      return 2;
+    }
+  if(elem.i < elem2.i)
+    {
+      return 1;
+    }
+  else
+    {
+      printf("comp_func reached equality. elem = %d, elem2 = %d\n", elem.i, elem2.i);
+      return 0;
+    }
+}
+
+bool tree_print_func(tree_key_t key, elem_t elem, void *data)
+{
+  printf("key = %d\n", key.i);
+  return true;
+}
 
 int main(int argc, char **argv)
 {
-  bool list = true;
+  bool list = false;
   if(list)
     {
-
+      /*
       elem_t elem1 = { .p = new_shelf("ett", 0) };
       elem_t elem2 = { .p = new_shelf("två", 1) };
       elem_t elem3 = { .p = new_shelf("tre", 2) };
@@ -188,7 +224,7 @@ int main(int argc, char **argv)
 
       puts("running delete again\n");
       //list_delete(the_list, true);
-      /*
+      
       puts("list_contains:\n");
       int i = list_contains(the_list, elem1);
       printf("%d\n", i);
@@ -196,7 +232,33 @@ int main(int argc, char **argv)
     }
   else
     {
-      
+      tree_t *tree = tree_new(copy_func, free_func, free_func, comp_func);
+
+      elem_t elem1 = { .i = 1};
+      elem_t elem2 = { .i = 2};
+      elem_t elem3 = { .i = 3};
+      elem_t elem4 = { .i = 4};
+      elem_t elem5 = { .i = 5};
+      elem_t elem6 = { .i = 6};
+      elem_t elem7 = { .i = 7};
+      elem_t elem8 = { .i = 8};
+      elem_t elem9 = { .i = 9};
+
+      puts("inserting elements\n");
+
+      tree_insert(tree, elem5, elem5);
+      tree_insert(tree, elem1, elem1);
+      tree_insert(tree, elem6, elem6);
+      tree_insert(tree, elem2, elem2);
+      tree_insert(tree, elem7, elem7);
+      tree_insert(tree, elem3, elem3);
+      tree_insert(tree, elem4, elem4);
+      tree_insert(tree, elem8, elem8);
+      tree_insert(tree, elem9, elem9);
+
+      puts("printing tree:\n");
+
+      tree_apply(tree, inorder, tree_print_func, NULL);
     }
   return 0;
 }

@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "common.h"
 
 typedef elem_t tree_key_t;
@@ -8,10 +9,10 @@ typedef element_free_fun key_free_fun;
 typedef struct node node_t;
 
 struct node{
-  node_t *left;
-  node_t *right;
-  elem_t  key; // Eller?
-  elem_t  elem;
+  node_t *    left;
+  node_t *    right;
+  tree_key_t  key; // Eller?
+  elem_t      elem;
 };
 
 typedef struct tree tree_t;
@@ -46,6 +47,34 @@ tree_t *tree_new(element_copy_fun element_copy, key_free_fun key_free, element_f
   result->compare   = compare;
 
   return result;
+}
+
+node_t *tree_node_new(tree_t *tree, tree_key_t key, elem_t elem)
+{
+  node_t *result = calloc(1, sizeof(node_t));
+  result->key = tree->copy(key);
+  result->elem = tree->copy(elem);
+  return result;
+}
+
+node_t **key_locator(tree_t *tree, node_t **cursor, tree_key_t key)
+{
+  while(*cursor != NULL)                            //Medans tom nod ej är nådd
+    {
+      if(tree->compare((*cursor)->key, key) == 0)   //Key är hittad
+        {
+          return cursor;
+        }
+      if(tree->compare((*cursor)->key, key) == 1)   //Flytta cursor höger
+        {
+          cursor = &((*cursor)->right);
+        }
+      else                                          //Vänster
+        {
+          cursor = &((*cursor)->left);
+        }
+    }
+  return cursor;                                    //Om key ej hittas, returna där cursor landade
 }
 
 /// Remove a tree along with all elem_t elements.
@@ -90,7 +119,17 @@ int tree_depth(tree_t *tree)
 /// \returns: true if successful, else false
 bool tree_insert(tree_t *tree, tree_key_t key, elem_t elem)
 {
-  return false;
+  node_t **cursor = key_locator(tree, &(tree->root), key);
+  if(*cursor)                                                 //Om cursor != NULL, så finns redan key
+    {
+      return false;
+    }
+  else                                // Annars har key_locator returnerat platsen där key hör hemma
+    {
+      *cursor = tree_node_new(tree, key, elem);
+      ++tree->size;
+      return true;
+    }
 }
 
 /// Checks whether a key is used in a tree
@@ -170,7 +209,42 @@ enum tree_order { inorder = 0, preorder = -1, postorder = 1 };
 /// \param fun the function to apply to all elements
 /// \param data an extra argument passed to each call to fun (may be NULL)
 /// \returns the result of all fun calls, combined with OR (||)
-bool tree_apply(tree_t *tree, enum tree_order order, key_elem_apply_fun fun, void *data)
+
+/// ---------- IN ORDER ----------
+bool tapply_inorder(node_t *cursor, key_elem_apply_fun fun, void *data)
 {
-  
+  if (cursor == NULL)
+    {
+      return true;
+    }
+  if (cursor != NULL)
+    {
+      tapply_inorder(cursor->left, fun, data);
+      fun(cursor->key, cursor->elem, data);
+      tapply_inorder(cursor->right, fun, data);
+    }
+  return true;
+}
+/// ---------- IN ORDER ----------
+
+/// ---------- IN ORDER ----------
+
+
+bool tree_apply(tree_t *tree, enum tree_order order, key_elem_apply_fun fun, void *data)
+{   //TODO: Fixa så return <bool> funkar korrekt
+  if(order == inorder)
+    {
+      tapply_inorder(tree->root, fun, data);
+      return true;
+    }
+  if(order == preorder)
+    {
+      puts("not implemented");
+      return true;
+    }
+  if(order == postorder)
+    {
+      puts("not implemented");
+      return true;
+    }
 }
