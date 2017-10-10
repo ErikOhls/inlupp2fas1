@@ -77,6 +77,8 @@ node_t **key_locator(tree_t *tree, node_t **cursor, tree_key_t key)
   return cursor;                                    //Om key ej hittas, returna där cursor landade
 }
 
+
+
 /// Remove a tree along with all elem_t elements.
 ///
 /// \param tree the tree
@@ -95,12 +97,38 @@ int tree_size(tree_t *tree)
   return tree->size;
 }
 
+// If first node not NULL
+// 
+int node_depth(node_t *node)
+{
+	int right_tree_depth;
+	int left_tree_depth;
+	if (node != NULL)
+	{
+		right_tree_depth = node_depth(node->right);
+		left_tree_depth = node_depth(node->left);
+		if (right_tree_depth > left_tree_depth)
+		{
+			return (right_tree_depth + 1);
+		}
+		else
+		{
+			return (left_tree_depth + 1);
+		}
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+
 /// Get the depth of the tree 
 ///
 /// \returns: the depth of the deepest subtree
 int tree_depth(tree_t *tree)
 {
-  return 0;
+  return (node_depth(tree->root));
 }
 
 /// Insert element into the tree. Returns false if the key is already used.
@@ -141,7 +169,12 @@ bool tree_insert(tree_t *tree, tree_key_t key, elem_t elem)
 /// \returns: true if key is a key in the tree
 bool tree_has_key(tree_t *tree, tree_key_t key)
 {
-  return false;
+	node_t **cursor = &(tree->root);
+	if (key_locator(tree, cursor, key) != NULL)
+		{
+			return true;
+		}
+	return false;
 }
 
 /// Finds the element for a given key in tree.
@@ -173,7 +206,7 @@ bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
 /// \returns: array of tree_size() keys
 tree_key_t *tree_keys(tree_t *tree)
 {
-  
+ return 0; 
 }
 
 /// Returns an array holding all the elements in the tree
@@ -184,7 +217,8 @@ tree_key_t *tree_keys(tree_t *tree)
 /// \returns: array of tree_size() elements
 elem_t *tree_elements(tree_t *tree)
 {
-  
+	
+	return 0;
 }
 
 /// This function is used in tree_apply() to allow applying a function
@@ -212,7 +246,8 @@ enum tree_order { inorder = 0, preorder = -1, postorder = 1 };
 
 /// ---------- IN ORDER ----------
 bool tapply_inorder(node_t *cursor, key_elem_apply_fun fun, void *data)
-{
+{	
+	bool fun_result = false;
   if (cursor == NULL)
     {
       return true;
@@ -220,7 +255,8 @@ bool tapply_inorder(node_t *cursor, key_elem_apply_fun fun, void *data)
   if (cursor != NULL)
     {
       tapply_inorder(cursor->left, fun, data);
-      fun(cursor->key, cursor->elem, data);
+      fun_result = fun(cursor->key, cursor->elem, data);
+	  if (fun_result) *success = true;
       tapply_inorder(cursor->right, fun, data);
     }
   return true;
@@ -247,4 +283,5 @@ bool tree_apply(tree_t *tree, enum tree_order order, key_elem_apply_fun fun, voi
       puts("not implemented");
       return true;
     }
+  return false;
 }
