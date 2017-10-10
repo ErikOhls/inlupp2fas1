@@ -259,6 +259,10 @@ int main(int argc, char **argv)
       puts("printing tree:\n");
 
       tree_apply(tree, postorder, tree_print_func, NULL);
+
+      tree_apply(tree, inorder, tree_print_func, NULL);
+      int i = tree_depth(tree);
+      printf("%d\n", i);
     }
   return 0;
 }

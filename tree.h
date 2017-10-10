@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include "common.h"
 
+typedef struct tree tree_t;
+
 typedef elem_t tree_key_t;
 typedef element_free_fun key_free_fun;
 

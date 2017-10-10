@@ -1,7 +1,6 @@
 
-
 tester: tester.c list.o tree.o
-	gcc tester.c common.h tree.o list.o -o tester -g
+	gcc tester.c list.o tree.o -o tester -g
 
 utils_db.o: utils.o tree.o list.o utils_db.c utils_db.h
 	gcc utils.o tree.o list.o db_utils.c -c -g
