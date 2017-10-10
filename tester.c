@@ -163,7 +163,7 @@ int comp_func(elem_t elem, elem_t elem2)
     }
   else
     {
-      printf("comp_func reached equality. elem = %d, elem2 = %d\n", elem.i, elem2.i);
+      puts("comp_func has reached equality\n");
       return 0;
     }
 }
@@ -243,6 +243,7 @@ int main(int argc, char **argv)
       elem_t elem7 = { .i = 7};
       elem_t elem8 = { .i = 8};
       elem_t elem9 = { .i = 9};
+      elem_t elem10 = { .i = 10};
 
       puts("inserting elements\n");
 
@@ -256,13 +257,23 @@ int main(int argc, char **argv)
       tree_insert(tree, elem8, elem8);
       tree_insert(tree, elem9, elem9);
 
-      puts("printing tree:\n");
-
-      tree_apply(tree, postorder, tree_print_func, NULL);
+      puts("printing in-order tree:\n");
 
       tree_apply(tree, inorder, tree_print_func, NULL);
+
       int i = tree_depth(tree);
-      printf("%d\n", i);
+      printf("depth of tree = %d\n", i);
+
+      puts("printing pre-order tree:\n");
+
+      tree_apply(tree, preorder, tree_print_func, NULL);
+
+      puts("tree has key elem 10");
+      if(tree_has_key(tree, elem10))
+        {
+          puts("true!\n");
+        }
+      else puts("false!\n");
     }
   return 0;
 }

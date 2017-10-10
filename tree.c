@@ -101,12 +101,12 @@ int tree_size(tree_t *tree)
 // 
 int node_depth(node_t *node)
 {
-	int right_tree_depth;
 	int left_tree_depth;
+	int right_tree_depth;
 	if (node != NULL)
 	{
-		right_tree_depth = node_depth(node->right);
 		left_tree_depth = node_depth(node->left);
+		right_tree_depth = node_depth(node->right);
 		if (right_tree_depth > left_tree_depth)
 		{
 			return (right_tree_depth + 1);
@@ -130,6 +130,139 @@ int tree_depth(tree_t *tree)
 {
   return (node_depth(tree->root));
 }
+
+/// ---------- BALANCING ----------
+/// ---------- LEFT LEFT ----------
+node_t *rotate_ll(node_t *node)
+{
+  node_t *z = node;
+  node_t *y = z->left;
+
+  z->left = y->right;
+  y->right = z;
+
+  return y;
+}
+
+/// ---------- LEFT RIGHT ----------
+node_t *rotate_lr(node_t *node)
+{
+  node_t *z = node;
+  node_t *y = z->left;
+  node_t *x = y->right;
+
+  z->left = x->right;
+  y->right = x->left;
+  x->left = y;
+  x->right = z;
+
+  return x;
+}
+
+/// ---------- RIGHT RIGHT ----------
+node_t *rotate_rr(node_t *node)
+{
+  node_t *z = node;
+  node_t *y = z->right;
+
+  z->right = y->left;
+  y->left = z;
+
+  return y;
+}
+
+/// ---------- RIGHT LEFT ----------
+node_t *rotate_rl(node_t *node)
+{
+  node_t *z = node;
+  node_t *y = z->right;
+  node_t *x = y->left;
+
+  z->right = x->left;
+  y->left = x->right;
+  x->right = y;
+  x->left = z;
+
+  return x;
+}
+
+/// ---------- L/R BALANCE ----------
+int tree_balance(node_t *node)
+{
+  int balance = 0;
+
+  if(node->left)
+    {
+      balance += node_depth(node->left);
+    }
+  if(node->right)
+    {
+      balance -= node_depth(node->right);
+    }
+
+  return balance;
+}
+
+/// ---------- NODE BALANCE ----------
+node_t *balance_node(node_t *node)
+{
+  node_t *new_local_root = NULL;
+  // Gå ner i trädet och balancera ifrån botten först
+  if(node->left)
+    {
+      node->left = balance_node(node->left);
+    }
+  if(node->right)
+    {
+      node->right = balance_node(node->right);
+    }
+
+  int balance = tree_balance(node);
+
+  // Balanceringen
+  if(balance >= 2)                           // Vänster för djup
+    {
+       if(tree_balance(node->left) <= -1)
+        {
+          new_local_root = rotate_ll(node);
+        }
+      else
+        {
+          new_local_root = rotate_lr(node);
+        }
+    }
+
+  else if(balance <= -2)                     // Höger för djup
+    {
+       if(tree_balance(node->right) <= -1)
+        {
+           new_local_root = rotate_rr(node);
+         }
+      else
+        { 
+          new_local_root = rotate_rl(node);
+        }
+    }
+  else                                       // Trädet redan balancerat
+    {
+       new_local_root = node;
+    }
+  return new_local_root;
+}
+
+/// ---------- TREE BALANCE ----------
+void balance_tree(tree_t *tree)
+{
+  node_t *new_root = NULL;
+  new_root = balance_node(tree->root);
+
+  if(new_root != tree->root)                 // Om rotnoden ändrats, peka om den till nya.
+    {
+      tree->root = new_root;
+    }
+  return;
+}
+
 
 /// Insert element into the tree. Returns false if the key is already used.
 ///
@@ -155,6 +288,7 @@ bool tree_insert(tree_t *tree, tree_key_t key, elem_t elem)
   else                                // Annars har key_locator returnerat platsen där key hör hemma
     {
       *cursor = tree_node_new(tree, key, elem);
+      balance_tree(tree);
       ++tree->size;
       return true;
     }
@@ -170,7 +304,7 @@ bool tree_insert(tree_t *tree, tree_key_t key, elem_t elem)
 bool tree_has_key(tree_t *tree, tree_key_t key)
 {
 	node_t **cursor = &(tree->root);
-	if (key_locator(tree, cursor, key) != NULL)
+	if (*key_locator(tree, cursor, key) != NULL)
 		{
 			return true;
 		}
