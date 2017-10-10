@@ -11,7 +11,7 @@ typedef struct node node_t;
 struct node{
   node_t *    left;
   node_t *    right;
-  tree_key_t  key; // Eller?
+  tree_key_t  key;
   elem_t      elem;
 };
 
@@ -173,7 +173,7 @@ bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
 /// \returns: array of tree_size() keys
 tree_key_t *tree_keys(tree_t *tree)
 {
-  
+
 }
 
 /// Returns an array holding all the elements in the tree
@@ -184,7 +184,7 @@ tree_key_t *tree_keys(tree_t *tree)
 /// \returns: array of tree_size() elements
 elem_t *tree_elements(tree_t *tree)
 {
-  
+
 }
 
 /// This function is used in tree_apply() to allow applying a function
@@ -211,40 +211,76 @@ enum tree_order { inorder = 0, preorder = -1, postorder = 1 };
 /// \returns the result of all fun calls, combined with OR (||)
 
 /// ---------- IN ORDER ----------
-bool tapply_inorder(node_t *cursor, key_elem_apply_fun fun, void *data)
+bool tapply_inorder(node_t *cursor, bool *success, key_elem_apply_fun fun, void *data)
 {
+  bool fun_result = false;
   if (cursor == NULL)
     {
       return true;
     }
   if (cursor != NULL)
     {
-      tapply_inorder(cursor->left, fun, data);
-      fun(cursor->key, cursor->elem, data);
-      tapply_inorder(cursor->right, fun, data);
+      tapply_inorder(cursor->left, success, fun, data);
+      fun_result = fun(cursor->key, cursor->elem, data);
+      if (fun_result) *success = true;
+      tapply_inorder(cursor->right, success, fun, data);
     }
   return true;
 }
-/// ---------- IN ORDER ----------
 
-/// ---------- IN ORDER ----------
+/// ---------- PRE ORDER ----------
+bool tapply_preorder(node_t *cursor, bool *success, key_elem_apply_fun fun, void *data)
+{
+  bool fun_result = false;
+  if (cursor == NULL)
+    {
+      return true;
+    }
+  if (cursor != NULL)
+    {
+      fun_result = fun(cursor->key, cursor->elem, data);
+      if (fun_result) *success = true;
+      tapply_preorder(cursor->left, success, fun, data);
+      tapply_preorder(cursor->right, success, fun, data);
+    }
+  return true;
+}
 
+/// ---------- POST ORDER ----------
+bool tapply_postorder(node_t *cursor, bool *success, key_elem_apply_fun fun, void *data)
+{
+  bool fun_result = false;
+  if (cursor == NULL)
+    {
+      return true;
+    }
+  if (cursor != NULL)
+    {
+      tapply_postorder(cursor->left, success, fun, data);
+      tapply_postorder(cursor->right, success, fun, data);
+      fun_result = fun(cursor->key, cursor->elem, data);
+      if (fun_result) *success = true;
+    }
+  return true;
+}
 
+/// ---------- ACTUALL APPLY ----------
 bool tree_apply(tree_t *tree, enum tree_order order, key_elem_apply_fun fun, void *data)
-{   //TODO: Fixa så return <bool> funkar korrekt
+{
+  bool success = false;
   if(order == inorder)
     {
-      tapply_inorder(tree->root, fun, data);
-      return true;
+      tapply_inorder(tree->root, &success, fun, data);
+      return success;
     }
   if(order == preorder)
     {
-      puts("not implemented");
-      return true;
+      tapply_preorder(tree->root, &success, fun, data);
+      return success;
     }
   if(order == postorder)
     {
-      puts("not implemented");
-      return true;
+      tapply_postorder(tree->root, &success, fun, data);
+      return success;
     }
 }

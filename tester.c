@@ -258,7 +258,7 @@ int main(int argc, char **argv)
 
       puts("printing tree:\n");
 
-      tree_apply(tree, inorder, tree_print_func, NULL);
+      tree_apply(tree, postorder, tree_print_func, NULL);
     }
   return 0;
 }
