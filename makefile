@@ -20,7 +20,10 @@ run: tester
 debug: tester
 	gdb tester
 
+valgrind: tester
+	valgrind --leak-check=full ./tester
+
 clean:
 	rm common.h.gch list.o tree.o utils.o db_utils.o a.out tester utils.h.gch db_utils.h.gch list.h.gch tree.h.gch db_utils.c~ db_utils.h~ -f
 
-.PHONY: run debug clean 
+.PHONY: run debug clean valgrind

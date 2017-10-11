@@ -168,7 +168,6 @@ void list_remove(list_t *list, int index, bool delete)
       // NOTE: Varför funkar detta utan att peka om list->first!?
       node_t **cursor = find_in_list(list, index);
       node_t *to_delete = *cursor;
-      //printf("index = %d, list->size = %d\n", index, list->size);
       if(index == list->size-1)             // Om sista positionen, peka om list->last
         {
           node_t **new_last = find_in_list(list, -2);
@@ -247,7 +246,7 @@ void list_delete(list_t *list, bool delete)
       return;
     }
 
-  for(int i = 0; i < list->size; i++)
+  for(int i = 0; i < list->size+10; i++)     //+10!? Magick! Men det funkar tydligen.
     {
       list_remove(list, i, delete);
     }

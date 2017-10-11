@@ -3,85 +3,8 @@
 #include "common.h"
 #include <stdlib.h>
 #include <stdio.h>
-///int version
-/*
-elem_t copy_func(elem_t elem)
-{
-  return elem;
-}
-
-void free_func(elem_t elem)
-{
-  return;
-}
-
-int comp_func(elem_t elem, elem_t elem2)
-{
-  if(elem.i > elem2.i)
-    {
-      return 2;
-    }
-  if(elem.i < elem2.i)
-    {
-      return 1;
-    }
-  else return 0;
-}
-
-bool print_func(elem_t elem, void *data)
-{
-  printf("element = %d\n", elem.i);
-  return true;
-}
-
-bool fail_func(elem_t elem, void *data)
-{
-  return false;
-}
-
-int main(int argc, char **argv)
-{
-  elem_t elem1 = { .i=1 };
-  elem_t elem2 = { .i=2 };
-  elem_t elem3 = { .i=3 };
-  elem_t elem4 = { .i=4 };
-  elem_t elem5 = { .i=5 };
-  elem_t elem6 = { .i=6 };
-  elem_t elem7 = { .i=7 };
-  elem_t elem8 = { .i=8 };
-  elem_t elem9 = { .i=9 };
-
-  list_t *the_list = list_new(copy_func, free_func, comp_func);
-
-  list_insert(the_list, 0, elem1);
-
-  list_insert(the_list, 1, elem2);
-  list_insert(the_list, 2, elem3);
-  list_insert(the_list, 3, elem4);
-
-  list_prepend(the_list, elem5);
-
-  list_append(the_list, elem6);
-
-  list_insert(the_list, 1000, elem7);
-
-  puts("running list get\n");
-  elem_t *retrieved;
-  list_get(the_list, 6, retrieved);
-
-  list_apply(the_list, print_func, NULL);
-
-  puts("running remove\n");
-  list_remove(the_list, 60, true);
-
-  list_apply(the_list, print_func, NULL);
-
-  return 0;
-}
-*/
 
 /// Struct list version
-
 struct shelf{
   char *name;
   int amount;
@@ -96,7 +19,22 @@ shelf_t *new_shelf(char* name, int amount)
   new_shelf->amount = amount;
   return new_shelf;
 }
-/*
+
+struct item{
+  char *name;
+  int amount;
+};
+
+typedef struct item item_t;
+
+item_t *new_item(char* name, int amount)
+{
+  item_t *new_item = calloc(1, sizeof(item_t));
+  new_item->name = name;
+  new_item->amount = amount;
+  return new_item;
+}
+
 elem_t copy_func(elem_t elem)
 {
   shelf_t *from = elem.p;
@@ -137,27 +75,35 @@ void print_tmp(elem_t elem)
 {
   printf("element found = %s\n", ((shelf_t *)elem.p)->name);
 }
-*/
 
-/// TREE Int version
 
-elem_t copy_func(elem_t elem)
+/// TREE item version
+
+elem_t t_copy_func(elem_t elem)
 {
-  return elem;
+  item_t *from = elem.p;
+  item_t *to = calloc(1, sizeof(item_t));
+
+  *to = *from;
+
+  elem_t result;
+  result.p = to;
+  return result;
 }
 
-void free_func(elem_t elem)
+void t_free_func(elem_t elem)
 {
-  return;
+  
+  free(elem.p);
 }
 
-int comp_func(elem_t elem, elem_t elem2)
+int t_comp_func(elem_t elem, elem_t elem2)
 {
-  if(elem.i > elem2.i)
+  if(((item_t*)elem.p)->amount > ((item_t*)elem2.p)->amount)
     {
       return 2;
     }
-  if(elem.i < elem2.i)
+  if(((item_t*)elem.p)->amount < ((item_t*)elem2.p)->amount)
     {
       return 1;
     }
@@ -170,16 +116,21 @@ int comp_func(elem_t elem, elem_t elem2)
 
 bool tree_print_func(tree_key_t key, elem_t elem, void *data)
 {
-  printf("key = %d\n", key.i);
+  printf("key = %d, elem = %s\n", ((item_t*)key.p)->amount, ((item_t*)elem.p)->name);
   return true;
+}
+
+void print_specific(elem_t elem)
+{
+  //printf("elem retrieved = %d\n", elem);
 }
 
 int main(int argc, char **argv)
 {
-  bool list = false;
+  /// List Shelf version
+  bool list = false;;
   if(list)
     {
-      /*
       elem_t elem1 = { .p = new_shelf("ett", 0) };
       elem_t elem2 = { .p = new_shelf("två", 1) };
       elem_t elem3 = { .p = new_shelf("tre", 2) };
@@ -222,58 +173,95 @@ int main(int argc, char **argv)
       puts("running delete\n");
       list_delete(the_list, true);
 
-      puts("running delete again\n");
-      //list_delete(the_list, true);
-      
-      puts("list_contains:\n");
-      int i = list_contains(the_list, elem1);
-      printf("%d\n", i);
-      */
+      puts("freeing elements\n");
+      free(elem1.p);
+      free(elem2.p);
+      free(elem3.p);
+      free(elem4.p);
+      free(elem5.p);
+      free(elem6.p);
+      free(elem7.p);
+      free(elem8.p);
+      free(elem9.p);
     }
+  /// Tree item version
   else
     {
-      tree_t *tree = tree_new(copy_func, free_func, free_func, comp_func);
+      elem_t telem1 = { .p = new_item("ett" ,1) };
+      elem_t telem2 = { .p = new_item("två", 2) };
+      elem_t telem3 = { .p = new_item("tre", 3) };
+      elem_t telem4 = { .p = new_item("fyra", 4) };
+      elem_t telem5 = { .p = new_item("fem", 5) };
+      elem_t telem6 = { .p = new_item("sex", 6) };
+      elem_t telem7 = { .p = new_item("sju", 7) };
+      elem_t telem8 = { .p = new_item("åtta", 8) };
+      elem_t telem9 = { .p = new_item("nio", 9) };
+      elem_t telem10 = { .p = new_item("tio", 10) };
 
-      elem_t elem1 = { .i = 1};
-      elem_t elem2 = { .i = 2};
-      elem_t elem3 = { .i = 3};
-      elem_t elem4 = { .i = 4};
-      elem_t elem5 = { .i = 5};
-      elem_t elem6 = { .i = 6};
-      elem_t elem7 = { .i = 7};
-      elem_t elem8 = { .i = 8};
-      elem_t elem9 = { .i = 9};
-      elem_t elem10 = { .i = 10};
+      puts("making tree\n");
+      tree_t *tree = tree_new(t_copy_func, t_free_func, t_free_func, t_comp_func);
 
       puts("inserting elements\n");
-
-      tree_insert(tree, elem5, elem5);
-      tree_insert(tree, elem1, elem1);
-      tree_insert(tree, elem6, elem6);
-      tree_insert(tree, elem2, elem2);
-      tree_insert(tree, elem7, elem7);
-      tree_insert(tree, elem3, elem3);
-      tree_insert(tree, elem4, elem4);
-      tree_insert(tree, elem8, elem8);
-      tree_insert(tree, elem9, elem9);
+      tree_insert(tree, telem1, telem1);
+      tree_insert(tree, telem2, telem2);
+      tree_insert(tree, telem3, telem3);
+      tree_insert(tree, telem4, telem4);
+      tree_insert(tree, telem5, telem5);
+      tree_insert(tree, telem6, telem6);
+      tree_insert(tree, telem7, telem7);
+      tree_insert(tree, telem8, telem8);
+      tree_insert(tree, telem9, telem9);
 
       puts("printing in-order tree:\n");
-
       tree_apply(tree, inorder, tree_print_func, NULL);
 
       int i = tree_depth(tree);
       printf("depth of tree = %d\n", i);
 
       puts("printing pre-order tree:\n");
-
       tree_apply(tree, preorder, tree_print_func, NULL);
 
       puts("tree has key elem 10");
-      if(tree_has_key(tree, elem10))
+      if(tree_has_key(tree, telem10))
         {
           puts("true!\n");
         }
       else puts("false!\n");
+
+      puts("tree_get\n");
+      elem_t elemget;
+      if(tree_get(tree, telem1, &elemget))
+        {
+          puts("true!\n");
+          printf("elem = %s\n", ((item_t*)elemget.p)->name);
+        }
+      else puts("false!\n");
+
+      puts("tree_keys\n");
+      tree_key_t *key_list = tree_keys(tree);
+      free(key_list);
+
+      puts("tree_elements\n");
+      elem_t *elem_list = tree_elements(tree);
+      free(elem_list);
+
+      puts("deleting tree\n");
+      tree_delete(tree, true, true);
+
+      puts("printing in-order tree:\n");
+      tree_apply(tree, inorder, tree_print_func, NULL);
+
+      puts("freeing elems");
+      free(telem1.p);
+      free(telem2.p);
+      free(telem3.p);
+      free(telem4.p);
+      free(telem5.p);
+      free(telem6.p);
+      free(telem7.p);
+      free(telem8.p);
+      free(telem9.p);
+      free(telem10.p);
     }
   return 0;
 }

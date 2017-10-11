@@ -77,16 +77,46 @@ node_t **key_locator(tree_t *tree, node_t **cursor, tree_key_t key)
   return cursor;                                    //Om key ej hittas, returna där cursor landade
 }
 
-
-
 /// Remove a tree along with all elem_t elements.
 ///
 /// \param tree the tree
 /// \param delete_keys if true, run tree's key_free function on all keys
 /// \param delete_elements if true, run tree's elem_free function on all elements
+void deleter(tree_t *tree, node_t *node, bool delete_keys, bool delete_elements)
+{
+  if(delete_keys)
+    {
+      tree->free_key(node->key);
+    }
+  if(delete_elements)
+    {
+      tree->free_elem(node->elem);
+    }
+  free(node);
+}
+
+void tree_delete_aux(tree_t *tree, node_t *cursor, bool delete_keys, bool delete_elements)
+{
+  if(cursor == NULL)
+    {
+      return;
+    }
+  else
+    {
+      tree_delete_aux(tree, cursor->left, delete_keys, delete_elements);
+      tree_delete_aux(tree, cursor->right, delete_keys, delete_elements);
+      deleter(tree, cursor, delete_keys, delete_elements);
+    }
+}
+
 void tree_delete(tree_t *tree, bool delete_keys, bool delete_elements)
 {
-  return;
+  if(tree->root)
+    {
+      tree_delete_aux(tree, tree->root, delete_keys, delete_elements);
+      free(tree);
+    }
+  else return;
 }
 
 /// Get the size of the tree 
@@ -239,7 +269,7 @@ node_t *balance_node(node_t *node)
            new_local_root = rotate_rr(node);
          }
       else
-        { 
+        {
           new_local_root = rotate_rl(node);
         }
     }
@@ -287,7 +317,7 @@ bool tree_insert(tree_t *tree, tree_key_t key, elem_t elem)
     }
   else                                // Annars har key_locator returnerat platsen där key hör hemma
     {
-      *cursor = tree_node_new(tree, key, elem);
+      *cursor = tree_node_new(tree, tree->copy(key), tree->copy(elem));
       balance_tree(tree);
       ++tree->size;
       return true;
@@ -312,14 +342,21 @@ bool tree_has_key(tree_t *tree, tree_key_t key)
 }
 
 /// Finds the element for a given key in tree.
-/// 
+///
 /// \param tree pointer to the tree
 /// \param key the key of elem to be removed
 /// \param result a pointer to where result can be stored (only defined when result is true)
 /// \returns: true if key is a key in the tree
 bool tree_get(tree_t *tree, tree_key_t key, elem_t *result)
 {
-  return false;
+  node_t **cursor = &(tree->root);
+  node_t **found_node = key_locator(tree, cursor, key);
+	if (*found_node != NULL)
+		{  //NOTE: Kanske måste ändra (*result -> result) när vi använder items
+      *result = ((*found_node)->elem);
+			return true;
+		}
+	return false;
 }
 
 /// Removes the element for a given key in tree.
@@ -328,9 +365,17 @@ bool tree_get(tree_t *tree, tree_key_t key, elem_t *result)
 /// \param key the key of elem to be removed
 /// \param result a pointer to where result can be stored (only defined when result is true)
 /// \returns: true if key is a key in the tree
+/// TODO: Ändra. Ska ta bort noden, key, elem. Result ska va ny adress, med kopia av borttagna elem
 bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
 {
-  return false;
+  node_t **to_delete = key_locator(tree, &(tree->root), key);
+  if(to_delete)
+    {  //NOTE: Untested
+      tree->free_elem((*to_delete)->elem);
+      (*to_delete)->elem = *result;
+      return true;
+    }
+  else return false;
 }
 
 /// Returns an array holding all the keys in the tree
@@ -338,9 +383,28 @@ bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
 ///
 /// \param tree pointer to the tree
 /// \returns: array of tree_size() keys
+tree_key_t *tree_keys_aux(node_t *cursor, tree_key_t *key_array, int *i)
+{
+    if (cursor == NULL)
+    {
+      return key_array;
+    }
+  if (cursor != NULL)
+    {
+      tree_keys_aux(cursor->left, key_array, i);
+      *i = *i + 1;
+      key_array[*i] = cursor->key;
+      tree_keys_aux(cursor->right, key_array, i);
+    }
+  return key_array;
+}
+
 tree_key_t *tree_keys(tree_t *tree)
 {
-  return 0; 
+  int i = -1;
+  tree_key_t *key_array = calloc(tree->size, sizeof(tree_key_t));
+  //NOTE: Glöm inte free!!!
+  return tree_keys_aux(tree->root, key_array, &i);
 }
 
 /// Returns an array holding all the elements in the tree
@@ -349,9 +413,28 @@ tree_key_t *tree_keys(tree_t *tree)
 ///
 /// \param tree pointer to the tree
 /// \returns: array of tree_size() elements
+tree_key_t *tree_elem_aux(node_t *cursor, elem_t *elem_array, int *i)
+{
+  if (cursor == NULL)
+    {
+      return elem_array;
+    }
+  if (cursor != NULL)
+    {
+      tree_elem_aux(cursor->left, elem_array, i);
+      *i = *i + 1;
+      elem_array[*i] = cursor->key;
+      tree_elem_aux(cursor->right, elem_array, i);
+    }
+  return elem_array;
+}
+
 elem_t *tree_elements(tree_t *tree)
 {
-	return 0;
+  int i = -1;
+  elem_t *elem_array = calloc(tree->size, sizeof(elem_t));
+  //NOTE: Glöm inte free!!!
+  return tree_elem_aux(tree->root, elem_array, &i);
 }
 
 /// This function is used in tree_apply() to allow applying a function
