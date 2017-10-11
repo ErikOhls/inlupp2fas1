@@ -86,7 +86,7 @@ bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result);
 /// \param result a elem_t where result will be stored (only defined when result is true)
 /// \returns true if both operations succeeded
 #define tree_update(t, k, e, tmp) \
-  (tree_remove(t, k, &tmp) ? tree_insert(t, k, e) : false)
+	(tree_remove(t, k, &tmp) ? tree_insert(t, k, e) : false)
 
 /// Returns an array holding all the keys in the tree
 /// in ascending order.
