@@ -220,7 +220,7 @@ int main(int argc, char **argv)
 
 		puts("printing pre-order tree:\n");
 		tree_apply(tree, preorder, tree_print_func, NULL);
-
+    /*
 		puts("tree has key elem 10");
 		if(tree_has_key(tree, telem10))
 		{
@@ -244,16 +244,16 @@ int main(int argc, char **argv)
 		puts("tree_elements\n");
 		elem_t *elem_list = tree_elements(tree);
 		free(elem_list);
-
+    */
 		elem_t elemget2;
 		puts("Check");
-		tree_remove(tree, (telem9), &elemget2);
+		//tree_remove(tree, (telem4), &elemget2);
+
+		puts("printing pre-order tree:\n");
+		tree_apply(tree, preorder, tree_print_func, NULL);
 
 		puts("deleting tree\n");
 		tree_delete(tree, true, true);
-
-		puts("printing in-order tree:\n");
-		tree_apply(tree, inorder, tree_print_func, NULL);
 
 		puts("freeing elems");
 		free(telem1.p);
