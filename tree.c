@@ -111,7 +111,7 @@ void tree_delete_aux(tree_t *tree, node_t *cursor, bool delete_keys, bool delete
 
 void tree_delete(tree_t *tree, bool delete_keys, bool delete_elements)
 {
-	if(tree->root)
+	if(tree)
 	{
 		tree_delete_aux(tree, tree->root, delete_keys, delete_elements);
 		free(tree);
