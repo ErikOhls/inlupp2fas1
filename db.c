@@ -18,6 +18,13 @@ typedef struct item{
   int     price;
   list_t *list;
 } item_t;
+/*
+bool l_print_func(elem_t elem, void *data)
+{
+	printf("key = %d, elem = %s\n", ((item_t*)key.p)->amount, ((item_t*)elem.p)->name);
+	return true;
+}
+*/
 
 //////////// ================= DATASTRUCTURE FUNCTIONS
 ///
@@ -36,16 +43,26 @@ elem_t t_copy_func(elem_t elem)
 	return result;
 }
 
-void t_free_func(elem_t elem)
+void t_free_key_func(elem_t elem)
 {
   if(elem.p != NULL)
     {
-      /*  TODO: Segfualt
+      free(elem.p);
+    }
+  else return;
+}
+
+void t_free_elem_func(elem_t elem)
+{
+  item_t *item = elem.p;
+  if(elem.p != NULL)
+    {
+   
       if(((item_t*)elem.p)->list != NULL)
         {
-          list_delete(((item_t*)elem.p)->list, true);
+          list_delete(item->list, true);
         }
-      */
+   
       free(elem.p);
     }
   else return;
@@ -480,7 +497,7 @@ int main(int argc, char *argv[])
 {
   puts("Välkommen till database v2.0 av Erik och Mats\n\
 ==================================================\n");
-  tree_t *db = tree_new(t_copy_func, t_free_func, t_free_func, t_comp_func);
+  tree_t *db = tree_new(t_copy_func, t_free_key_func, t_free_elem_func, t_comp_func);
 
   puts("insert\n");
 

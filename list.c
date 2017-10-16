@@ -163,19 +163,22 @@ void list_remove(list_t *list, int index, bool delete)
 		return;
 	}
 	else                                      // Delete @ index
-	{
-		if(index >= list->size) index = list->size-1;
-		// NOTE: Varför funkar detta utan att peka om list->first!?
-		node_t **cursor = find_in_list(list, index);
-		node_t *to_delete = *cursor;
-		if(index == list->size-1)             // Om sista positionen, peka om list->last
-		{
-			node_t **new_last = find_in_list(list, -2);
-			list->last = *new_last;
-		}
-		else                                  // Annars peka "över" bortagna element
-		{
-			*cursor = (*cursor)->next;
+    {
+      if(index >= list->size)
+        {
+          index = list->size-1;
+        }
+      // NOTE: Varför funkar detta utan att peka om list->first!?
+      node_t **cursor = find_in_list(list, index);
+      node_t *to_delete = *cursor;
+      if(index == list->size-1)             // Om sista positionen, peka om list->last
+        {
+          node_t **new_last = find_in_list(list, -2);
+          list->last = *new_last;
+        }
+      else                                  // Annars peka "över" bortagna element
+        {
+          *cursor = (*cursor)->next;
 		}
 		if(delete)
 		{
@@ -245,7 +248,7 @@ void list_delete(list_t *list, bool delete)
 	{
 		return;
 	}
-
+  int size = list->size;
 	for(int i = 0; i < list->size+10; i++)     //+10!? Magick! Men det funkar tydligen.
 	{
 		list_remove(list, i, delete);
