@@ -246,7 +246,7 @@ int main(int argc, char **argv)
 		free(elem_list);
     */
 		elem_t elemget2;
-		puts("Check");
+		puts("Tree_remove:\n");
 		tree_remove(tree, (telem4), &elemget2);
 
 		puts("printing pre-order tree:\n");

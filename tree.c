@@ -383,6 +383,61 @@ void tree_insert_node(tree_t *tree, node_t *node, tree_key_t key)
 /// NOTE: Ska ta bort noden, key, elem. Result ska va ny adress, med kopia av borttagna elem
 bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
 {
+  node_t **to_delete = key_locator(tree, &(tree->root), key);
+  if(to_delete)
+    {
+      if(*to_delete == tree->root)            // Om edge case root
+        {
+          node_t **cursor = to_delete;
+          if((*cursor)->right)                // Om höger träd finns
+            {
+              *cursor = (*cursor)->right;
+              while((*cursor)->left != NULL)
+                {
+                  *cursor = (*cursor)->left;
+                }
+              (*cursor)->left = tree->root->left;    //Peka om nya rooten
+              (*cursor)->right = tree->root->right;
+              tree->root = *cursor;
+            }
+
+          else if((*cursor)->left)            // Om inte höger finns, men vänster. Ny root.
+            {
+              tree->root = (*cursor)->left;
+            }
+          /*
+          *result = (*to_delete)->elem;
+          tree->free_elem((*to_delete)->elem);
+          tree->free_key((*to_delete)->key);
+          free(*to_delete);
+          */
+          return true;
+        }
+
+      else
+        {
+          node_t *tmp_left = NULL;
+          node_t *tmp_right = NULL;
+
+          if((*to_delete)->left)
+            {
+              tmp_left = (*to_delete)->left;
+            }
+          if((*to_delete)->right)
+            {
+              tmp_right = (*to_delete)->right;
+            }
+
+          *result = (*to_delete)->elem;
+          tree->free_elem((*to_delete)->elem);
+          tree->free_key((*to_delete)->key);
+          free(*to_delete);
+
+          return true;
+        }
+    }
+  else return false;
+  /*
 	node_t **to_delete = key_locator(tree, &(tree->root), key);
 	if(to_delete)
 	{
@@ -403,13 +458,15 @@ bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
     if(tree->root == *to_delete)
       {
         puts("deleting tree->root!\n");
-        bool root_reroute = true;
+        root_reroute = true;
         node_t **cursor = &(*to_delete)->right;
         while((*cursor)->left != NULL)
           {
             puts("iterating...\n");
             cursor = &((*cursor)->left);
           }
+        (*cursor)->left = tree->root->left;
+        (*cursor)->right = tree->root->right;
         tree->root = (*cursor);
       }
 
@@ -419,13 +476,13 @@ bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
 		free(*to_delete);
 		--tree->size;
 
-		if (tmp_left && root_reroute)                         //Om dotter vänster finns, reinsert.
+    if (tmp_left && !root_reroute)                         //Om dotter vänster finns, reinsert.
 		{
       puts("insert right\n");
 			tree_insert_node(tree, tmp_left, tmp_left->key);
 		}
 
-		if (tmp_right && root_reroute)                        //Om dotter höger finns, reinsert.
+		if (tmp_right && !root_reroute)                        //Om dotter höger finns, reinsert.
 		{
       puts("insert right\n");
 			tree_insert_node(tree, tmp_right, tmp_right->key);
@@ -435,6 +492,7 @@ bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
 
 	}
 	return false;
+  */
 
 }
 

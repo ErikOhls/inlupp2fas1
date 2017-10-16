@@ -53,11 +53,11 @@ void t_free_func(elem_t elem)
 
 int t_comp_func(elem_t elem, elem_t elem2)
 {
-	if(strcmp(((char*)elem.p), ((char*)elem2.p)) < 0)
+	if(strcmp(((char*)elem.p), ((char*)elem2.p)) > 0)
     {
       return 2;
     }
-	if(strcmp(((char*)elem.p), ((char*)elem2.p)) > 0)
+	if(strcmp(((char*)elem.p), ((char*)elem2.p)) < 0)
     {
       return 1;
     }
@@ -69,8 +69,7 @@ int t_comp_func(elem_t elem, elem_t elem2)
 
 bool t_print_func(tree_key_t key, elem_t elem, void *data)
 {
-  puts("t_print");
-	printf("key = %s", ((char*)key.p));
+	printf("Key = %s. Elem->name = %s\n" , ((char*)key.p), ((item_t*)elem.p)->name);
 	return true;
 }
 
@@ -98,11 +97,11 @@ void l_free_func(elem_t elem)
 
 int l_comp_func(elem_t elem, elem_t elem2)
 {
-	if(strcmp((((shelf_t*)elem.p)->shelf_name), ((shelf_t*)elem2.p)->shelf_name) < 0)
+	if(strcmp((((shelf_t*)elem.p)->shelf_name), ((shelf_t*)elem2.p)->shelf_name) > 0)
     {
       return 2;
     }
-	if(strcmp((((shelf_t*)elem.p)->shelf_name), ((shelf_t*)elem2.p)->shelf_name) > 0)
+	if(strcmp((((shelf_t*)elem.p)->shelf_name), ((shelf_t*)elem2.p)->shelf_name) < 0)
     {
       return 1;
     }
@@ -210,140 +209,150 @@ void input_item(tree_t *db)
 ///// TEMPORARY FOR TESTING
 void direct_input(tree_t *db)
 {
-  puts("making shelf\n");
   shelf_t *new_shelf = calloc(1, sizeof(shelf_t));
   new_shelf->shelf_name = "A10";
   new_shelf->amount = 100;
 
-  shelf_t *new_shelf2 = calloc(1, sizeof(shelf_t));
+  shelf_t *new_subshelf1 = calloc(1, sizeof(shelf_t));
   new_shelf->shelf_name = "B10";
   new_shelf->amount = 100;
 
-  shelf_t *new_shelf3 = calloc(1, sizeof(shelf_t));
-  new_shelf->shelf_name = "C10";
-  new_shelf->amount = 100;
-
-  shelf_t *new_shelf4 = calloc(1, sizeof(shelf_t));
-  new_shelf->shelf_name = "D10";
-  new_shelf->amount = 100;
-
-  shelf_t *new_shelf5 = calloc(1, sizeof(shelf_t));
-  new_shelf->shelf_name = "E10";
-  new_shelf->amount = 100;
-
-  shelf_t *new_shelf6 = calloc(1, sizeof(shelf_t));
-  new_shelf->shelf_name = "F10";
-  new_shelf->amount = 100;
-
-  shelf_t *new_shelf7 = calloc(1, sizeof(shelf_t));
-  new_shelf->shelf_name = "G10";
-  new_shelf->amount = 100;
-
-  shelf_t *new_shelf8 = calloc(1, sizeof(shelf_t));
-  new_shelf->shelf_name = "H10";
-  new_shelf->amount = 100;
-
-  shelf_t *new_shelf9 = calloc(1, sizeof(shelf_t));
-  new_shelf->shelf_name = "J10";
-  new_shelf->amount = 100;
-
-  puts("making item\n");
   item_t *new_item = calloc(1, sizeof(item_t));
   new_item->name = "test1";
   new_item->desc = "test1";
   new_item->price = 100;
 
-  item_t *new_item2 = calloc(1, sizeof(item_t));
-  new_item->name = "test2";
-  new_item->desc = "test2";
-  new_item->price = 100;
-
-  item_t *new_item3 = calloc(1, sizeof(item_t));
-  new_item->name = "test3";
-  new_item->desc = "test3";
-  new_item->price = 100;
-
-  item_t *new_item4 = calloc(1, sizeof(item_t));
-  new_item->name = "test4";
-  new_item->desc = "test4";
-  new_item->price = 100;
-
-  item_t *new_item5 = calloc(1, sizeof(item_t));
-  new_item->name = "test5";
-  new_item->desc = "test5";
-  new_item->price = 100;
-
-  item_t *new_item6 = calloc(1, sizeof(item_t));
-  new_item->name = "test6";
-  new_item->desc = "test6";
-  new_item->price = 100;
-
-  item_t *new_item7 = calloc(1, sizeof(item_t));
-  new_item->name = "test7";
-  new_item->desc = "test7";
-  new_item->price = 100;
-
-  item_t *new_item8 = calloc(1, sizeof(item_t));
-  new_item->name = "test8";
-  new_item->desc = "test8";
-  new_item->price = 100;
-
-
-  puts("making list\n");
   elem_t list_elem = { .p = new_shelf };
-  elem_t list_elem2 = { .p = new_shelf2 };
+  elem_t list_subelem2 = { .p = new_subshelf1 };
   new_item->list = list_new(l_copy_func, l_free_func, l_comp_func);
   list_append(new_item->list, list_elem);
-  list_append(new_item->list, list_elem2);
-
-  elem_t list_elem3 = { .p = new_shelf3 };
-  new_item2->list = list_new(l_copy_func, l_free_func, l_comp_func);
-  list_append(new_item2->list, list_elem3);
-
-  elem_t list_elem4 = { .p = new_shelf4 };
-  new_item3->list = list_new(l_copy_func, l_free_func, l_comp_func);
-  list_append(new_item3->list, list_elem4);
-
-  elem_t list_elem5 = { .p = new_shelf5 };
-  new_item4->list = list_new(l_copy_func, l_free_func, l_comp_func);
-  list_append(new_item4->list, list_elem5);
-
-  elem_t list_elem6 = { .p = new_shelf6 };
-  new_item5->list = list_new(l_copy_func, l_free_func, l_comp_func);
-  list_append(new_item5->list, list_elem6);
-
-  elem_t list_elem7 = { .p = new_shelf7 };
-  new_item6->list = list_new(l_copy_func, l_free_func, l_comp_func);
-  list_append(new_item6->list, list_elem7);
-
-  elem_t list_elem8 = { .p = new_shelf8 };
-  new_item7->list = list_new(l_copy_func, l_free_func, l_comp_func);
-  list_append(new_item7->list, list_elem8);
-
-  elem_t list_elem9 = { .p = new_shelf9 };
-  new_item8->list = list_new(l_copy_func, l_free_func, l_comp_func);
-  list_append(new_item8->list, list_elem9);
+  list_append(new_item->list, list_subelem2);
 
   elem_t elem1 = { .p = new_item };
   tree_key_t key1 = { .p = new_item->name };
 
+  // ----- ITEM 2 -----
+
+  shelf_t *new_shelf2 = calloc(1, sizeof(shelf_t));
+  new_shelf2->shelf_name = "C10";
+  new_shelf2->amount = 100;
+
+  item_t *new_item2 = calloc(1, sizeof(item_t));
+  new_item2->name = "test2";
+  new_item2->desc = "test2";
+  new_item2->price = 100;
+
+  elem_t list_elem2 = { .p = new_shelf2 };
+  new_item2->list = list_new(l_copy_func, l_free_func, l_comp_func);
+  list_append(new_item2->list, list_elem2);;
+
   elem_t elem2 = { .p = new_item2 };
   tree_key_t key2 = { .p = new_item2->name };
+
+  // ----- ITEM 3 -----
+
+  shelf_t *new_shelf3 = calloc(1, sizeof(shelf_t));
+  new_shelf3->shelf_name = "D10";
+  new_shelf3->amount = 100;
+
+  item_t *new_item3 = calloc(1, sizeof(item_t));
+  new_item3->name = "test3";
+  new_item3->desc = "test3";
+  new_item3->price = 100;
+
+  elem_t list_elem3 = { .p = new_shelf3 };
+  new_item3->list = list_new(l_copy_func, l_free_func, l_comp_func);
+  list_append(new_item3->list, list_elem3);;
 
   elem_t elem3 = { .p = new_item3 };
   tree_key_t key3 = { .p = new_item3->name };
 
+  // ----- ITEM 4 -----
+
+  shelf_t *new_shelf4 = calloc(1, sizeof(shelf_t));
+  new_shelf4->shelf_name = "E10";
+  new_shelf4->amount = 100;
+
+  item_t *new_item4 = calloc(1, sizeof(item_t));
+  new_item4->name = "test4";
+  new_item4->desc = "test4";
+  new_item4->price = 100;
+
+  elem_t list_elem4 = { .p = new_shelf4 };
+  new_item4->list = list_new(l_copy_func, l_free_func, l_comp_func);
+  list_append(new_item4->list, list_elem4);;
+
   elem_t elem4 = { .p = new_item4 };
   tree_key_t key4 = { .p = new_item4->name };
+
+  // ----- ITEM 5 -----
+
+  shelf_t *new_shelf5 = calloc(1, sizeof(shelf_t));
+  new_shelf5->shelf_name = "F10";
+  new_shelf5->amount = 100;
+
+  item_t *new_item5 = calloc(1, sizeof(item_t));
+  new_item5->name = "test5";
+  new_item5->desc = "test5";
+  new_item5->price = 100;
+
+  elem_t list_elem5 = { .p = new_shelf5 };
+  new_item5->list = list_new(l_copy_func, l_free_func, l_comp_func);
+  list_append(new_item5->list, list_elem5);;
 
   elem_t elem5 = { .p = new_item5 };
   tree_key_t key5 = { .p = new_item5->name };
 
+  // ----- ITEM 6 -----
+
+  shelf_t *new_shelf6 = calloc(1, sizeof(shelf_t));
+  new_shelf6->shelf_name = "G10";
+  new_shelf6->amount = 100;
+
+  item_t *new_item6 = calloc(1, sizeof(item_t));
+  new_item6->name = "test6";
+  new_item6->desc = "test6";
+  new_item6->price = 100;
+
+  elem_t list_elem6 = { .p = new_shelf6 };
+  new_item6->list = list_new(l_copy_func, l_free_func, l_comp_func);
+  list_append(new_item6->list, list_elem6);;
+
   elem_t elem6 = { .p = new_item6 };
   tree_key_t key6 = { .p = new_item6->name };
 
+  // ----- ITEM 7 -----
+
+  shelf_t *new_shelf7 = calloc(1, sizeof(shelf_t));
+  new_shelf7->shelf_name = "P10";
+  new_shelf7->amount = 100;
+
+  item_t *new_item7 = calloc(1, sizeof(item_t));
+  new_item7->name = "test7";
+  new_item7->desc = "test7";
+  new_item7->price = 100;
+
+  elem_t list_elem7 = { .p = new_shelf7 };
+  new_item7->list = list_new(l_copy_func, l_free_func, l_comp_func);
+  list_append(new_item7->list, list_elem7);;
+
   elem_t elem7 = { .p = new_item7 };
   tree_key_t key7 = { .p = new_item7->name };
+
+  // ----- ITEM 8 -----
+
+  shelf_t *new_shelf8 = calloc(1, sizeof(shelf_t));
+  new_shelf8->shelf_name = "W10";
+  new_shelf8->amount = 100;
+
+  item_t *new_item8 = calloc(1, sizeof(item_t));
+  new_item8->name = "test8";
+  new_item8->desc = "test8";
+  new_item8->price = 100;
+
+  elem_t list_elem8 = { .p = new_shelf8 };
+  new_item8->list = list_new(l_copy_func, l_free_func, l_comp_func);
+  list_append(new_item8->list, list_elem8);;
 
   elem_t elem8 = { .p = new_item8 };
   tree_key_t key8 = { .p = new_item8->name };
@@ -351,23 +360,21 @@ void direct_input(tree_t *db)
   puts("inserting to tree\n");
 
   tree_insert(db, key1, elem1);
-  puts("insert2\n");
   tree_insert(db, key2, elem2);
-  puts("insert 3\n");
   tree_insert(db, key3, elem3);
   tree_insert(db, key4, elem4);
   tree_insert(db, key5, elem5);
   tree_insert(db, key6, elem6);
   tree_insert(db, key7, elem7);
-  puts("insert8\n");
   tree_insert(db, key8, elem8);
- 
+
   puts("printing tree inorder\n");
 
   tree_apply(db, inorder, t_print_func, NULL);
 
   free(new_shelf);
   free(new_item);
+  free(new_subshelf1);
   free(new_shelf2);
   free(new_item2);
   free(new_shelf3);
