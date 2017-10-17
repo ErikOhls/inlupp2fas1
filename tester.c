@@ -128,7 +128,7 @@ void print_specific(elem_t elem)
 int main(int argc, char **argv)
 {
 	/// List Shelf version
-	bool list = false;;
+	bool list = true;
 	if(list)
 	{
 		elem_t elem1 = { .p = new_shelf("ett", 0) };
