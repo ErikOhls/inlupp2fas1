@@ -122,7 +122,7 @@ bool tree_print_func(tree_key_t key, elem_t elem, void *data)
 
 void print_specific(elem_t elem)
 {
-	//printf("elem retrieved = %d\n", elem);
+	printf("elem retrieved = %s\n", ((item_t*)elem.p)->name);
 }
 
 int main(int argc, char **argv)
@@ -245,9 +245,19 @@ int main(int argc, char **argv)
 		elem_t *elem_list = tree_elements(tree);
 		free(elem_list);
     */
+
+    puts("tree_get\n");
+		elem_t elemget;
+		if(tree_get(tree, telem4, &elemget))
+      {
+        puts("true!\n");
+        printf("elem = %s\n", ((item_t*)elemget.p)->name);
+      }
+
 		elem_t elemget2;
 		puts("Tree_remove:\n");
 		tree_remove(tree, (telem4), &elemget2);
+
 
 		puts("printing pre-order tree:\n");
 		tree_apply(tree, preorder, tree_print_func, NULL);

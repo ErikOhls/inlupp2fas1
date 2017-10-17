@@ -349,8 +349,7 @@ bool tree_has_key(tree_t *tree, tree_key_t key)
 /// \returns: true if key is a key in the tree
 bool tree_get(tree_t *tree, tree_key_t key, elem_t *result)
 {
-	node_t **cursor = &(tree->root);
-	node_t **found_node = key_locator(tree, cursor, key);
+	node_t **found_node = key_locator(tree, &(tree->root), key);
 	if (*found_node != NULL)
 	{
 		*result = ((*found_node)->elem);
@@ -398,8 +397,6 @@ bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
                 {
                   cursor = &(*cursor)->left;
                 }
-              //(*cursor)->left = tmpleft;
-              //(*cursor)->right = tmpright;
 
               (*cursor)->left = tree->root->left;
               (*cursor)->right = tree->root->right;
@@ -444,62 +441,6 @@ bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
         }
     }
   else return false;
-  /*
-	node_t **to_delete = key_locator(tree, &(tree->root), key);
-	if(to_delete)
-	{
-		node_t *tmp_left = NULL;
-		node_t *tmp_right = NULL;
-    bool root_reroute = false;
-
-		if ((*to_delete)->left)
-		{
-			tmp_left = (*to_delete)->left;
-		}
-
-		if((*to_delete)->right)
-		{
-			tmp_right = (*to_delete)->right;
-		}
-
-    if(tree->root == *to_delete)
-      {
-        puts("deleting tree->root!\n");
-        root_reroute = true;
-        node_t **cursor = &(*to_delete)->right;
-        while((*cursor)->left != NULL)
-          {
-            puts("iterating...\n");
-            cursor = &((*cursor)->left);
-          }
-        (*cursor)->left = tree->root->left;
-        (*cursor)->right = tree->root->right;
-        tree->root = (*cursor);
-      }
-
-		*result = (*to_delete)->elem;                         //Skapa kopian
-		tree->free_elem((*to_delete)->elem);
-		tree->free_key((*to_delete)->key);
-		free(*to_delete);
-		--tree->size;
-
-    if (tmp_left && !root_reroute)                         //Om dotter vänster finns, reinsert.
-		{
-      puts("insert right\n");
-			tree_insert_node(tree, tmp_left, tmp_left->key);
-		}
-
-		if (tmp_right && !root_reroute)                        //Om dotter höger finns, reinsert.
-		{
-      puts("insert right\n");
-			tree_insert_node(tree, tmp_right, tmp_right->key);
-		}
-
-		return true;
-
-	}
-	return false;
-  */
 
 }
 

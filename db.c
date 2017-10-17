@@ -90,6 +90,18 @@ bool t_print_func(tree_key_t key, elem_t elem, void *data)
 	return true;
 }
 
+bool check_shelf_existance(tree_key_t key, elem_t elem, void *data)
+{
+  //NOTE: varför funkar inte detta då?
+  //int i = list_contains(((item_t*)elem)->list, ((elem_t)data));
+  int i = 0;
+  if(i != -1)
+    {
+      return false;
+    }
+  else return true;
+}
+
 // -------------- List ---------------
 elem_t l_copy_func(elem_t elem)
 {
@@ -126,6 +138,13 @@ int l_comp_func(elem_t elem, elem_t elem2)
     {
       return 0;
     }
+}
+/// TMP FOR TESTING
+void print_specific(elem_t elem)
+{
+  puts("pre print\n");
+  printf("key = %s\n", ((item_t*)elem.p)->name);
+  puts("post print\n");
 }
 
 //////////// ================= Print menus
@@ -200,12 +219,51 @@ char ask_question_menu_edit(void)
 ///
 void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_name, int amount)
 {
-  //TODO:
+  puts("making item\n");
+  // Make shelf
+  shelf_t *new_shelf = calloc(1, sizeof(shelf_t));
+  new_shelf->shelf_name = shelf_name;
+  new_shelf->amount = amount;
+
+  //Make item
+  item_t *new_item = calloc(1, sizeof(item_t));
+  new_item->name = name;
+  new_item->desc = desc;
+  new_item->price = 100;
+
+  //Make list
+  elem_t list_elem = { .p = new_shelf };
+  new_item->list = list_new(l_copy_func, l_free_func, l_comp_func);
+  list_append(new_item->list, list_elem);
+
+  //Make elems
+  elem_t elem = { .p = new_item };
+  tree_key_t key = { .p = new_item->name };
+
+  elem_t found_elem;// = calloc(1, sizeof(elem_t)); //TODO: FREEEEE!!!
+
+  puts("checking if item exists\n");
+  if(tree_get(db, key, &found_elem))               // Kolla om item redan finns
+    {
+      puts("item exists, adding new shelf\n");
+      print_specific(found_elem);
+      list_append(((item_t*)&found_elem)->list, list_elem);
+    }
+
+  else
+    {
+      puts("inserting item to tree\n");
+      tree_insert(db, key, elem);
+    }
+
   //If item exists, append list of item and do not insert
 
   //If shelf exists, avbryt
 
   //If shelf AND item exists, shelf->amount += amount
+
+  free(new_shelf);
+  free(new_item);
 
   return;
 }
@@ -385,9 +443,9 @@ void direct_input(tree_t *db)
   tree_insert(db, key7, elem7);
   tree_insert(db, key8, elem8);
 
-  puts("printing tree inorder\n");
+  puts("printing tree preorder\n");
 
-  tree_apply(db, inorder, t_print_func, NULL);
+  tree_apply(db, preorder, t_print_func, NULL);
 
   free(new_shelf);
   free(new_item);
