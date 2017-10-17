@@ -471,12 +471,100 @@ void direct_input(tree_t *db)
 ///
 /// Functions for listing the database
 ///
-void list_db(tree_t *db)
+
+bool  print_item_list(tree_key_t *key_list, int nof_keys, int n)
 {
-  tree_key_t *key_list = tree_keys(db);
-  //TODO: list that shit!
-  free(key_list);
-  return;
+	int remaining_nodes = (nof_keys - n * 20);
+	int page_size = (20 < (remaining_nodes) ? 20:(remaining_nodes)); 
+	for(int i = 0; i < page_size; i++)
+	{
+		printf("%d. %s \n" , i + 1 ,key_list[n * 20 + i].p);
+	}
+	return remaining_nodes > 0;
+}
+
+bool is_valid_print(char *string)
+{
+	char x;
+	char *valid_options = "SNC";
+	x = toupper(string[0]);
+	for(int i = 0; i <= 3; i = i + 1)
+	{
+		if ( x == valid_options[i])
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+char which_option(char *string)
+{
+	char c;
+	c = string[0];
+	c = toupper(c);
+	return c;
+}
+
+int ask_question_listing()
+{
+	return ask_question("Please select an option", is_valid_print, (convert_func) which_option).i;
+}
+
+void print_listing_options()
+{
+	puts("[S]elect an item between 1-20\n\
+[N]ext page\n\
+[C]ancel\n");
+}
+
+void list_database(tree_t *tree)
+{
+	elem_t elem;
+	int page = 0;
+	char d = 'q';
+	bool ismore;
+	tree_key_t *key_array = tree_keys(tree);	//TODO: free
+	while (d != 'C')
+	{
+		ismore = print_item_list(key_array, tree_size(tree), page);
+		print_listing_options();
+		d = ask_question_listing();
+		switch(d)
+		{
+			case 'S':
+				{
+					int remaining_nodes = (tree_size(tree) - page * 20);
+					int x = 0;
+					do
+					{
+						x = ask_question_int("Select one of the listed items");
+					}
+					while (!(x <= (20 < (remaining_nodes) ? 20:(remaining_nodes)) && x > 0));
+					t_print_func(tree, tree_get(tree, (key_array[page * 20 + x-1]), &elem), NULL);
+				}
+				break;
+
+			case 'N':
+				{
+					if (ismore)
+					{
+						++page;
+					}
+					else
+					{
+						puts("No more pages exists.");
+					}
+				}
+				break;
+
+			case 'C':
+				{
+					puts("Selection canceled\n");
+				}
+				break;
+		}
+	}                
 }
 
 //////////// ================= EVENT LOOPS
