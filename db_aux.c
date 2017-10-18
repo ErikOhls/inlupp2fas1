@@ -84,7 +84,6 @@ bool t_print_func(tree_key_t key, elem_t elem, void *data)
 
 bool check_shelf_existance(tree_key_t key, elem_t elem, void *data)
 {
-  puts("in shelf_existance, running list_contains\n");
   int i = list_contains(((item_t*)elem.p)->list, ((elem_t)data));
   if(i != -1)
     {
@@ -148,9 +147,7 @@ void print_item(elem_t elem)
 /// TMP FOR TESTING
 void print_specific(elem_t elem)
 {
-  puts("pre print\n");
   printf("key = %s\n", ((item_t*)elem.p)->name);
-  puts("post print\n");
 }
 
 //////////// ================= Menus

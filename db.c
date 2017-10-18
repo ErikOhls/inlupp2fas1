@@ -34,16 +34,17 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
   elem_t found_elem;
 
   bool item_exists = tree_get(db, key, &found_elem);
-  //puts("running shelf_exists\n");
-  //printf("list_elem->name = %s\n", ((shelf_t*)list_elem.p)->shelf_name);
-  //bool shelf_exists = tree_apply(db, inorder, check_shelf_existance, &list_elem);
-  bool shelf_exists = false;
+  puts("running shelf_exists\n");
+  printf("list_elem->name = %s\n", ((shelf_t*)list_elem.p)->shelf_name);
+  bool shelf_exists = tree_apply(db, inorder, check_shelf_existance, &list_elem);
 
   if(item_exists && shelf_exists)
     {
-      puts("shelf->amount += amount goes here\n");
+      puts("Vara samt varuhylla finns redan! Försök igen\n");
+
       free(new_shelf);
       free(new_item);
+
       return;
     }
 
@@ -52,10 +53,11 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
       tree_key_t key = { .p = name };
       elem_t result = {};
       tree_get(db, key, &result);
-
       list_append(((item_t*)result.p)->list, list_elem);
+
       free(new_shelf);
       free(new_item);
+
       return;
     }
 
@@ -64,6 +66,7 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
       puts("Varahyllan är redan tagen! Försök igen\n");
       free(new_shelf);
       free(new_item);
+
       return;
     }
 
@@ -73,6 +76,7 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
       tree_insert(db, key, elem);
       free(new_shelf);
       free(new_item);
+
       return;
     }
 }
@@ -171,6 +175,12 @@ int list_database(tree_t *db, bool edit)
   return -1;
 }
 
+//////////// ================= ITEM EDIT
+///
+/// Functions for editing items in database
+///
+
+
 //////////// ================= EVENT LOOPS
 ///
 /// Handles menus
@@ -178,7 +188,12 @@ int list_database(tree_t *db, bool edit)
 void event_loop_edit(tree_t *db /*undo*/ )
 {
   bool quit_v = true;
-  //item_t *chosen_item = någon funktion
+  int choise = list_database(db, true);
+  tree_key_t *key_list = tree_keys(db);
+  elem_t to_edit = {};
+  tree_get(db, key_list[choise], &to_edit);
+  free(key_list);
+
   //TODO: Undo
   while(quit_v)
     {
@@ -226,7 +241,7 @@ void event_loop(tree_t *db)
           break;
 
         case 'R' :                       // Redigera
-          puts("Inte implementerat!");
+          event_loop_edit(db);
           break;
 
         case 'G' :                       // Undo

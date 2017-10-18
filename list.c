@@ -209,8 +209,6 @@ bool list_get(list_t *list, int index, elem_t *result)
 			cursor = &((*cursor)->next);
 		}
 		*result = ((*cursor)->elem);
-		//int tmp = (*cursor)->elem.i;
-		//printf("elem @ index %d is %d\n", index, tmp); // Sketchy, funkar bara på int
 		return true;
 	}
 }
