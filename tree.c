@@ -382,76 +382,76 @@ void tree_insert_node(tree_t *tree, node_t *node, tree_key_t key)
 /// NOTE: Ska ta bort noden, key, elem. Result ska va ny adress, med kopia av borttagna elem
 bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
 {
-  node_t **to_delete = key_locator(tree, &(tree->root), key);
-  node_t *to_free = *to_delete;
-  if(to_delete)
-    {
-      if(*to_delete == tree->root)            // Om edge case root
-        {
-          node_t **cursor = to_delete;
-          if((*cursor)->right)                // Om höger träd finns
-            {
-              cursor = &(*cursor)->right;
-              while((*cursor)->left != NULL)
-                {
-                  cursor = &(*cursor)->left;
-                }
+	node_t **to_delete = key_locator(tree, &(tree->root), key);
+	node_t *to_free = *to_delete;
+	if(to_delete)
+	{
+		if(*to_delete == tree->root)            // Om edge case root
+		{
+			node_t **cursor = to_delete;
+			if((*cursor)->right)                // Om höger träd finns
+			{
+				cursor = &(*cursor)->right;
+				while((*cursor)->left != NULL)
+				{
+					cursor = &(*cursor)->left;
+				}
 
-              (*cursor)->left = tree->root->left;
-              (*cursor)->right = tree->root->right;
-              tree->root = *cursor;
+				(*cursor)->left = tree->root->left;
+				(*cursor)->right = tree->root->right;
+				tree->root = *cursor;
 
-              (*cursor) = NULL;
-            }
+				(*cursor) = NULL;
+			}
 
-          else if((*cursor)->left)            // Om inte höger finns, men vänster. Ny root.
-            {
-              tree->root = (*cursor)->left;
-            }
+			else if((*cursor)->left)            // Om inte höger finns, men vänster. Ny root.
+			{
+				tree->root = (*cursor)->left;
+			}
 
-          *result = (*to_delete)->elem;
-          tree->free_elem((to_free)->elem);
-          tree->free_key((to_free)->key);
-          free(to_free);
+			*result = (*to_delete)->elem;
+			tree->free_elem((to_free)->elem);
+			tree->free_key((to_free)->key);
+			free(to_free);
 
-          return true;
-        }
+			return true;
+		}
 
-      else
-        {
-          node_t *tmp_left = NULL;
-          node_t *tmp_right = NULL;
+		else
+		{
+			node_t *tmp_left = NULL;
+			node_t *tmp_right = NULL;
 
-          if((*to_delete)->left)
-            {
-              tmp_left = (*to_delete)->left;
-            }
-          if((*to_delete)->right)
-            {
-              tmp_right = (*to_delete)->right;
-            }
+			if((*to_delete)->left)
+			{
+				tmp_left = (*to_delete)->left;
+			}
+			if((*to_delete)->right)
+			{
+				tmp_right = (*to_delete)->right;
+			}
 
-          *result = (*to_delete)->elem;
-          tree->free_elem((to_free)->elem);
-          tree->free_key((to_free)->key);
-          free(to_free);
+			*result = (*to_delete)->elem;
+			tree->free_elem((to_free)->elem);
+			tree->free_key((to_free)->key);
+			free(to_free);
 
-          (*to_delete) = NULL;
+			(*to_delete) = NULL;
 
-          if(tmp_left)
-            {
-              tree_insert_node(tree, tmp_left, tmp_left->key);
-            }
+			if(tmp_left)
+			{
+				tree_insert_node(tree, tmp_left, tmp_left->key);
+			}
 
-          if(tmp_right)
-            {
-              tree_insert_node(tree, tmp_right, tmp_right->key);
-            }
+			if(tmp_right)
+			{
+				tree_insert_node(tree, tmp_right, tmp_right->key);
+			}
 
-          return true;
-        }
-    }
-  else return false;
+			return true;
+		}
+	}
+	else return false;
 
 }
 
