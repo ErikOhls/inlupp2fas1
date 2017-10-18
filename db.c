@@ -22,10 +22,8 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
   new_item->desc = desc;
   new_item->price = price;
 
-  //Make list
+  //Make list element
   elem_t list_elem = { .p = new_shelf };
-  new_item->list = list_new(l_copy_func, l_free_func, l_comp_func);
-  list_append(new_item->list, list_elem);
 
   //Make elems
   elem_t elem = { .p = new_item };
@@ -42,6 +40,9 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
 
       free(new_shelf);
       free(new_item);
+      free(name);
+      free(desc);
+      free(shelf_name);
 
       return;
     }
@@ -55,6 +56,9 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
 
       free(new_shelf);
       free(new_item);
+      free(name);
+      free(desc);
+      free(shelf_name);
 
       return;
     }
@@ -64,6 +68,9 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
       puts("Varahyllan är redan tagen! Försök igen\n");
       free(new_shelf);
       free(new_item);
+      free(name);
+      free(desc);
+      free(shelf_name);
 
       return;
     }
@@ -71,9 +78,14 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
   else
     {
       puts("inserting to tree\n");
+      new_item->list = list_new(l_copy_func, l_free_func, l_comp_func);
+      list_append(new_item->list, list_elem);
       tree_insert(db, key, elem);
       free(new_shelf);
       free(new_item);
+      free(name);
+      free(desc);
+      free(shelf_name);
 
       return;
     }
@@ -177,7 +189,7 @@ int list_database(tree_t *db, bool edit)
 ///
 /// Functions for editing items in database
 ///
-//------------------------Remove----------------------
+// -------------- Remove ---------------
 void remove_item_from_db(tree_t *db)
 {
 	elem_t result = {};
@@ -193,6 +205,104 @@ void remove_item_from_db(tree_t *db)
 	free(key_list);
 }
 
+// -------------- edit desc ---------------
+void print_desc(elem_t elem)
+{
+  printf("Nuvarande beskrivning: %s\n", ((item_t*)elem.p)->name);
+}
+
+elem_t edit_desc_aux(elem_t elem)
+{
+  ((item_t*)elem.p)->desc = ask_question_string("Ny beskrivning: ");
+  return elem;
+}
+
+void edit_desc(elem_t *to_edit)
+{
+  print_desc(*to_edit);
+  puts("--------------------------------\n");
+  *to_edit = edit_desc_aux(*to_edit);
+  puts("Uppdaterad vara:\n");
+  print_item(*to_edit);
+  return;
+}
+
+// -------------- edit price ---------------
+void print_price(elem_t elem)
+{
+  printf("Nuvarande pris: %d\n", ((item_t*)elem.p)->price);
+}
+
+elem_t edit_price_aux(elem_t elem)
+{
+  ((item_t*)elem.p)->price = ask_question_int("Nytt pris: ");
+  return elem;
+}
+
+void edit_price(elem_t *to_edit)
+{
+  print_price(*to_edit);
+  puts("--------------------------------\n");
+  *to_edit = edit_price_aux(*to_edit);
+  puts("Uppdaterad vara:\n");
+  print_item(*to_edit);
+  return;
+}
+
+// -------------- edit shelf ---------------
+void print_shelflist(elem_t elem)
+{
+  list_apply(((item_t*)elem.p)->list, print_shelfs, NULL);
+}
+
+bool change_shelf(elem_t original, void *new)
+{
+  if(strcmp(((shelf_t*)original.p)->shelf_name, ((char *)new)) == 0)
+    {
+      return true;
+    }
+  return true;
+}
+
+void edit_shelf(tree_t *db, elem_t *to_edit)
+{
+  puts("Nuvarande hyllor: \n");
+  puts("--------------------------------\n");
+  print_shelflist(*to_edit);
+  puts("--------------------------------\n");
+
+  bool existance = false;
+  while(!existance)
+    {
+      //Bestäm vilken hylla ändra
+      char *new_shelf_name = ask_question_string("Vilken hylla vill du ändra?(case sensitive): ");
+      //Kolla om hyllan finns
+      shelf_t *shelf_tmp = calloc(1, sizeof(shelf_t));
+      shelf_tmp->shelf_name = new_shelf_name;
+      elem_t tmp_list_elem = { .p = shelf_tmp };
+      existance = tree_apply(db, inorder, check_shelf_existance, &tmp_list_elem);
+
+      //Ändra hyllan
+      if(existance)
+        {
+          puts("exists!\n");
+          //int to_change = list_contains()
+        }
+      else
+        {
+          puts("That shelf does not exist! Try again.\n");
+        }
+      free(shelf_tmp);
+    }
+
+  return;
+}
+// -------------- edit amount ---------------
+void edit_amount(elem_t *to_edit)
+{
+  return;
+}
+
 //////////// ================= EVENT LOOPS
 ///
 /// Handles menus
@@ -205,30 +315,30 @@ void event_loop_edit(tree_t *db /*undo*/ )
   elem_t to_edit = {};
   tree_get(db, key_list[choise], &to_edit);
   free(key_list);
-
+  print_item(to_edit);
   //TODO: Undo
   while(quit_v)
     {
       char option = ask_question_menu_edit();
       switch(option)
         {
-        case 'B' :
-          puts("Inte implementerat!");
+        case 'B' :                       // Beskrivning
+          edit_desc(&to_edit);
           break;
 
-        case 'P' :
-          puts("Inte implementerat!");
+        case 'P' :                       // Pris
+          edit_price(&to_edit);
           break;
 
-        case 'L' :
-          puts("Inte implementerat!");
+        case 'L' :                       // Lagerhylla
+          edit_shelf(db, &to_edit);
           break;
 
-        case 'T' :
-          puts("Inte implementerat!");
+        case 'T' :                       // Antal
+          edit_amount(&to_edit);
           break;
 
-        case 'A' :
+        case 'A' :                       // Avbryt
           quit_v = false;
           break;
         }
@@ -253,7 +363,7 @@ void event_loop(tree_t *db)
 				break;
 
 			case 'R' :                       // Redigera
-				puts("Inte implementerat!");
+			  event_loop_edit(db);
 				break;
 
 			case 'G' :                       // Undo

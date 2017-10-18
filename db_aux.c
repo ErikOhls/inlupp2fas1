@@ -84,12 +84,16 @@ bool t_print_func(tree_key_t key, elem_t elem, void *data)
 
 bool check_shelf_existance(tree_key_t key, elem_t elem, void *data)
 {
-  int i = list_contains(((item_t*)elem.p)->list, ((elem_t)data));
-  if(i != -1)
+  elem_t tmp = *(elem_t *) data;
+  int i = list_contains(((item_t*)elem.p)->list, tmp);
+  if(i == -1)
     {
       return false;
     }
-  else return true;
+  else
+    {
+      return true;
+    }
 }
 
 // -------------- List ---------------
