@@ -102,22 +102,30 @@ void page_lister(tree_key_t *key_list, int position, int limit)
     }
 }
 
-bool list_menu(tree_t *db, tree_key_t *key_list, int position, bool edit)
+bool list_menu(tree_t *db, tree_key_t *key_list, int position, bool edit, int *chosen_key)
 {
-  int item_choice = -1;
+  int local_item_choice = -1;
   print_list_db();
   char choice = ask_question_list_db();
   switch(choice)
     {
     case 'L':           // Visa vara
-      while(item_choice < 0 || item_choice > tree_size(db))
+      while(local_item_choice < 0 || local_item_choice > tree_size(db))
         {
-          item_choice = ask_question_int("Vilken vara vill du välja?\n") + position;
+          local_item_choice = ask_question_int("Vilken vara vill du välja?\n") + position;
         }
+      if(edit)
+        {
+          *chosen_key = local_item_choice;
+          return true;
+        }
+      else
+        {
       elem_t chosen;
-      tree_get(db, key_list[item_choice], &chosen);
+      tree_get(db, key_list[local_item_choice], &chosen);
       print_item(chosen);
       return true;
+        }
 
     case 'A':           // Avbryt
       return true;
@@ -128,20 +136,21 @@ bool list_menu(tree_t *db, tree_key_t *key_list, int position, bool edit)
   return false;
 }
 
-void list_database(tree_t *db, bool edit)
+int list_database(tree_t *db, bool edit)
 {
   int page_size = 5;
   int position = 0;
   int limit = page_size;
+  int chosen_key;
   tree_key_t *key_list = tree_keys(db);
   while(position < tree_size(db))
     {
       page_lister(key_list, position, limit);
 
-      if(list_menu(db, key_list, position, edit))
+      if(list_menu(db, key_list, position, edit, &chosen_key))
         {
           free(key_list);
-          return;
+          return chosen_key;
         }
 
       else
@@ -156,7 +165,7 @@ void list_database(tree_t *db, bool edit)
         }
     }
   free(key_list);
-  return;
+  return -1;
 }
 
 //////////// ================= EVENT LOOPS
