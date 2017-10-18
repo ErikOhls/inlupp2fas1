@@ -227,8 +227,8 @@ void direct_input(tree_t *db)
   new_shelf->amount = 100;
 
   shelf_t *new_subshelf1 = calloc(1, sizeof(shelf_t));
-  new_shelf->shelf_name = "B10";
-  new_shelf->amount = 100;
+  new_subshelf1->shelf_name = "B10";
+  new_subshelf1->amount = 100;
 
   item_t *new_item = calloc(1, sizeof(item_t));
   new_item->name = "test1";

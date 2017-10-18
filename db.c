@@ -49,8 +49,11 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
 
   else if(item_exists)
     {
-      puts("list append goes here\n");
-      list_append(((item_t*)elem.p)->list, list_elem);
+      tree_key_t key = { .p = name };
+      elem_t result = {};
+      tree_get(db, key, &result);
+
+      list_append(((item_t*)result.p)->list, list_elem);
       free(new_shelf);
       free(new_item);
       return;
