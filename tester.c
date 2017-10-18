@@ -254,6 +254,14 @@ int main(int argc, char **argv)
         printf("elem = %s\n", ((item_t*)elemget.p)->name);
       }
 
+    puts("tree elem array\n");
+    elem_t *elem_array = tree_elements(tree);
+    elem_t tmp1 = elem_array[1];
+    elem_t tmp2 = *elem_array++;
+
+    print_specific(tmp1);
+    print_specific(tmp2);
+
 		elem_t elemget2;
 		puts("Tree_remove:\n");
 		tree_remove(tree, (telem4), &elemget2);
