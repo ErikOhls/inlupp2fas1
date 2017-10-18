@@ -390,8 +390,6 @@ bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
           node_t **cursor = to_delete;
           if((*cursor)->right)                // Om höger träd finns
             {
-              node_t *tmpleft = tree->root->left;
-              node_t *tmpright = tree->root->right;
               cursor = &(*cursor)->right;
               while((*cursor)->left != NULL)
                 {

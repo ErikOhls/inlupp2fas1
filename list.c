@@ -248,7 +248,6 @@ void list_delete(list_t *list, bool delete)
 	{
 		return;
 	}
-  int size = list->size;
 	for(int i = 0; i < list->size+10; i++)     //+10!? Magick! Men det funkar tydligen.
 	{
 		list_remove(list, i, delete);
