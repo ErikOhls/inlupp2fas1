@@ -128,7 +128,7 @@ void print_specific(elem_t elem)
 int main(int argc, char **argv)
 {
 	/// List Shelf version
-	bool list = true;
+	bool list = false;
 	if(list)
 	{
 		elem_t elem1 = { .p = new_shelf("ett", 0) };
@@ -245,7 +245,7 @@ int main(int argc, char **argv)
 		elem_t *elem_list = tree_elements(tree);
 		free(elem_list);
     */
-
+    /*
     puts("tree_get\n");
 		elem_t elemget;
 		if(tree_get(tree, telem4, &elemget))
@@ -257,14 +257,15 @@ int main(int argc, char **argv)
     puts("tree elem array\n");
     elem_t *elem_array = tree_elements(tree);
     elem_t tmp1 = elem_array[1];
-    elem_t tmp2 = *elem_array++;
+    elem_t tmp2 = *(elem_array + 3);
+    free(elem_array);
 
     print_specific(tmp1);
     print_specific(tmp2);
-
+    */
 		elem_t elemget2;
 		puts("Tree_remove:\n");
-		tree_remove(tree, (telem4), &elemget2);
+		tree_remove(tree, (telem3), &elemget2);
 
 
 		puts("printing pre-order tree:\n");

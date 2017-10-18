@@ -383,6 +383,7 @@ void tree_insert_node(tree_t *tree, node_t *node, tree_key_t key)
 bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
 {
   node_t **to_delete = key_locator(tree, &(tree->root), key);
+  node_t *to_free = *to_delete;
   if(to_delete)
     {
       if(*to_delete == tree->root)            // Om edge case root
@@ -407,12 +408,12 @@ bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
             {
               tree->root = (*cursor)->left;
             }
-          /*
+
           *result = (*to_delete)->elem;
-          tree->free_elem((*to_delete)->elem);
-          tree->free_key((*to_delete)->key);
-          free(*to_delete);
-          */
+          tree->free_elem((to_free)->elem);
+          tree->free_key((to_free)->key);
+          free(to_free);
+
           return true;
         }
 
@@ -431,9 +432,21 @@ bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
             }
 
           *result = (*to_delete)->elem;
-          tree->free_elem((*to_delete)->elem);
-          tree->free_key((*to_delete)->key);
-          free(*to_delete);
+          tree->free_elem((to_free)->elem);
+          tree->free_key((to_free)->key);
+          free(to_free);
+
+          (*to_delete) = NULL;
+
+          if(tmp_left)
+            {
+              tree_insert_node(tree, tmp_left, tmp_left->key);
+            }
+
+          if(tmp_right)
+            {
+              tree_insert_node(tree, tmp_right, tmp_right->key);
+            }
 
           return true;
         }

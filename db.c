@@ -42,12 +42,18 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
   if(item_exists && shelf_exists)
     {
       puts("shelf->amount += amount goes here\n");
+      free(new_shelf);
+      free(new_item);
+      return;
     }
 
   else if(item_exists)
     {
       puts("list append goes here\n");
       list_append(((item_t*)elem.p)->list, list_elem);
+      free(new_shelf);
+      free(new_item);
+      return;
     }
 
   else if(shelf_exists)
@@ -96,7 +102,7 @@ void page_lister(tree_key_t *key_list, int position, int limit)
     }
 }
 
-bool list_menu(tree_t *db, tree_key_t *key_list, int position)
+bool list_menu(tree_t *db, tree_key_t *key_list, int position, bool edit)
 {
   int item_choice = -1;
   print_list_db();
@@ -122,7 +128,7 @@ bool list_menu(tree_t *db, tree_key_t *key_list, int position)
   return false;
 }
 
-void list_database(tree_t *db)
+void list_database(tree_t *db, bool edit)
 {
   int page_size = 5;
   int position = 0;
@@ -132,7 +138,7 @@ void list_database(tree_t *db)
     {
       page_lister(key_list, position, limit);
 
-      if(list_menu(db, key_list, position))
+      if(list_menu(db, key_list, position, edit))
         {
           free(key_list);
           return;
@@ -216,7 +222,7 @@ void event_loop(tree_t *db)
           break;
 
         case 'H' :                       // List DB
-          list_database(db);
+          list_database(db, false);
           break;
 
         case 'A' :                       // Quit
