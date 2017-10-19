@@ -5,6 +5,12 @@ db: db.c list.o tree.o utils.o db_aux.o
 tester: tester.c list.o tree.o
 	gcc tester.c list.o tree.o -o tester -g
 
+ltest: test_list.c list.c
+	gcc test_list.c list.c -Wall -o ltest -g -lcunit
+
+ttest: test_tree.c tree.c
+	gcc test_tree.c tree.c -Wall -o ttest -g -lcunit
+
 db_aux.o: db_aux.c
 	gcc db_aux.c -c -g
 
@@ -35,7 +41,13 @@ debugtester: tester
 valgrindtester: tester
 	valgrind --leak-check=full ./tester
 
-clean:
-	rm db common.h.gch list.o tree.o utils.o db_aux.o a.out tester utils.h.gch db_aux.h.gch list.h.gch tree.h.gch db_aux.c~ db_aux.h~ -f
+runltest: ltest
+	./ltest
 
-.PHONY: run debug clean valgrind runtester debugtester valgrindtester
+runttest: ttest
+	./ttest
+
+clean:
+	rm db ltest ttest common.h.gch list.o tree.o utils.o db_aux.o a.out tester utils.h.gch db_aux.h.gch list.h.gch tree.h.gch db_aux.c~ db_aux.h~ -f
+
+.PHONY: run debug clean valgrind runtester debugtester valgrindtester runltest runttest
