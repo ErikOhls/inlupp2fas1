@@ -213,7 +213,9 @@ void print_desc(elem_t elem)
 
 elem_t edit_desc_aux(elem_t elem)
 {
-  ((item_t*)elem.p)->desc = ask_question_string("Ny beskrivning: ");
+  char *tmp = ask_question_string("Ny beskrivning: ");
+  ((item_t*)elem.p)->desc = tmp;
+  free(tmp);
   return elem;
 }
 
@@ -257,8 +259,12 @@ void print_shelflist(elem_t elem)
 
 bool change_shelf(elem_t original, void *new)
 {
-  if(strcmp(((shelf_t*)original.p)->shelf_name, ((char *)new)) == 0)
+  elem_t tmp = *(elem_t *)new;
+  if(strcmp(((shelf_t*)original.p)->shelf_name, ((shelf_t *)tmp.p)->shelf_name) == 0)
     {
+      char *new_shelf_name = ask_question_shelf("Ny hylla: ");
+      ((shelf_t*)original.p)->shelf_name = new_shelf_name;
+      free(new_shelf_name);
       return true;
     }
   return true;
@@ -267,7 +273,7 @@ bool change_shelf(elem_t original, void *new)
 void edit_shelf(tree_t *db, elem_t *to_edit)
 {
   puts("Nuvarande hyllor: \n");
-  puts("--------------------------------\n");
+  puts("--------------------------------");
   print_shelflist(*to_edit);
   puts("--------------------------------\n");
 
@@ -276,6 +282,7 @@ void edit_shelf(tree_t *db, elem_t *to_edit)
     {
       //Bestäm vilken hylla ändra
       char *new_shelf_name = ask_question_string("Vilken hylla vill du ändra?(case sensitive): ");
+
       //Kolla om hyllan finns
       shelf_t *shelf_tmp = calloc(1, sizeof(shelf_t));
       shelf_tmp->shelf_name = new_shelf_name;
@@ -285,21 +292,69 @@ void edit_shelf(tree_t *db, elem_t *to_edit)
       //Ändra hyllan
       if(existance)
         {
-          puts("exists!\n");
-          //int to_change = list_contains()
+          list_t *list = ((item_t*)to_edit->p)->list;
+          list_apply(list, change_shelf, &tmp_list_elem);
         }
       else
         {
           puts("That shelf does not exist! Try again.\n");
         }
+      free(new_shelf_name);
       free(shelf_tmp);
     }
-
+  puts("Uppdaterad vara:\n");
+  print_item(*to_edit);
   return;
 }
+
 // -------------- edit amount ---------------
-void edit_amount(elem_t *to_edit)
+bool change_amount(elem_t original, void *new)
 {
+  elem_t tmp = *(elem_t *)new;
+  if(strcmp(((shelf_t*)original.p)->shelf_name, ((shelf_t *)tmp.p)->shelf_name) == 0)
+    {
+      printf("Nuvarande antal: %d", ((shelf_t*)original.p)->amount);
+      ((shelf_t*)original.p)->amount = ask_question_int("Nytt antal: \n");
+      return true;
+    }
+  return true;
+}
+
+
+void edit_amount(tree_t* db, elem_t *to_edit)
+{
+  puts("Nuvarande hyllor: \n");
+  puts("--------------------------------");
+  print_shelflist(*to_edit);
+  puts("--------------------------------\n");
+
+  bool existance = false;
+  while(!existance)
+    {
+      //Bestäm vilken hylla ändra
+      char *new_shelf_name = ask_question_string("Vilken hylla vill du ändra?(case sensitive): ");
+
+      //Kolla om hyllan finns
+      shelf_t *shelf_tmp = calloc(1, sizeof(shelf_t));
+      shelf_tmp->shelf_name = new_shelf_name;
+      elem_t tmp_list_elem = { .p = shelf_tmp };
+      existance = tree_apply(db, inorder, check_shelf_existance, &tmp_list_elem);
+
+      //Ändra hyllan
+      if(existance)
+        {
+          list_t *list = ((item_t*)to_edit->p)->list;
+          list_apply(list, change_amount, &tmp_list_elem);
+        }
+      else
+        {
+          puts("That shelf does not exist! Try again.\n");
+        }
+      free(new_shelf_name);
+      free(shelf_tmp);
+    }
+  puts("Uppdaterad vara:\n");
+  print_item(*to_edit);
   return;
 }
 
@@ -335,7 +390,7 @@ void event_loop_edit(tree_t *db /*undo*/ )
           break;
 
         case 'T' :                       // Antal
-          edit_amount(&to_edit);
+          edit_amount(db, &to_edit);
           break;
 
         case 'A' :                       // Avbryt

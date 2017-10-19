@@ -414,6 +414,8 @@ bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
 			tree->free_key((to_free)->key);
 			free(to_free);
 
+      --tree->size;
+
 			return true;
 		}
 
@@ -447,6 +449,8 @@ bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
 			{
 				tree_insert_node(tree, tmp_right, tmp_right->key);
 			}
+
+      --tree->size;
 
 			return true;
 		}
