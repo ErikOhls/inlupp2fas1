@@ -28,22 +28,18 @@ void undo_action(tree_t *db, action_t *latest_action) // * till &
 	    		puts("Du har inget att Ângra/n");
 			}
 		break;
-		
+
 		case 1: //l‰gga till en vara sÂ vi tar bara bort shelfen. LA merch -> varan vi la till. bˆrja med att s‰tta type till 1 i l‰gga till.
 			{
         printf("copy name = %s\n", latest_action->copy->name);
         free(latest_action->copy->name);
         free(latest_action->copy);
-				//printf("%s", s);
-				//elem_t *to_remove = (elem_t*)latest_action;
-				//tree_key_t key = { .p = latest_action->merch->name };
-				//tree_remove(db, key, to_remove);
-				//free(to_remove);
 
 			}
 		break;
 		}
-}	
+	latest_action->type = 0;
+}
 /*
 		case 2: //s‰tt gammla itemet i copy och ‰ndra latest_action type till 2. s‰tt LA tree-> tr‰det vi anv‰nder
 			{
@@ -562,7 +558,9 @@ int main(int argc, char *argv[])
 	puts("Välkommen till database v2.0 av Erik och Mats\n\
 =============================================\n");
 	tree_t *db = tree_new(t_copy_func, t_free_key_func, t_free_elem_func, t_comp_func);
+
 	action_t latest_action;
+
 	puts("insert\n");
 
 	direct_input(db);
