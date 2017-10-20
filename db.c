@@ -31,27 +31,31 @@ void undo_action(tree_t *db, action_t *latest_action) // * till &
 
 		case 1: //l‰gga till en vara sÂ vi tar bara bort shelfen. LA merch -> varan vi la till. bˆrja med att s‰tta type till 1 i l‰gga till.
 			{
-        printf("copy name = %s\n", latest_action->copy->name);
+        elem_t elem;
+		tree_key_t key = { .p = latest_action->copy->name };
+		tree_remove(db, key, &elem); 
         free(latest_action->copy->name);
         free(latest_action->copy);
 
 			}
 		break;
+
+
+		case 2: //s‰tt gammla itemet i copy och ‰ndra latest_action type till 2. s‰tt LA tree-> tr‰det vi anv‰nder
+			{
+					
+				elem_t elem;	
+				tree_key_t key = { .p = latest_action->copy->name };
+			//	elem_t *to_reinsert = malloc(sizeof(elem_t));
+			//	*to_reinsert = latest_action -> copy;
+			//	tree_insert(latest_action->merch, to_reinsert->name, to_reinsert);
+				tree_insert(db, key, elem);		
+			}	
+		break;
 		}
 	latest_action->type = 0;
 }
 /*
-		case 2: //s‰tt gammla itemet i copy och ‰ndra latest_action type till 2. s‰tt LA tree-> tr‰det vi anv‰nder
-			{
-                            // TA bort behˆvs inte ‰n
-				elem_t *to_reinsert = malloc(sizeof(elem_t));
-				*to_reinsert = latest_action -> copy;
-				tree_insert(latest_action->merch, to_reinsert->name, to_reinsert);	
-			}	
-		break;
-		}
-}
-
 
 		case 3: //Redigera varans pris. s‰tt LA merch -> varan vi redigerade(nya redigerade varan) s‰tt latest_action -> amoun ‰r gammla priset sedan s‰tter vi LA till 3.
 			{
@@ -306,7 +310,7 @@ int list_database(tree_t *db, bool edit)
 /// Functions for editing items in database
 ///
 // -------------- Remove ---------------
-void remove_item_from_db(tree_t *db)
+void remove_item_from_db(tree_t *db, action_t *latest_action)
 {
 	elem_t result = {};
 	int nr_to_remove = list_database(db, true);
@@ -316,8 +320,29 @@ void remove_item_from_db(tree_t *db)
 	elem_t tmp = {};
 	tree_get(db, key_list[nr_to_remove], &tmp);
 	print_specific(tmp);
+	
+      latest_action->type = 1;
+      item_t *save_item = calloc(1, sizeof(item_t)); // FREE!
+	  shelf_t *save_shelf = calloc(1, sizeof(shelf_t));
+
+      save_item->name = strdup(((item_t*)tmp.p)->name);
+      save_item->desc = strdup(((item_t*)tmp.p)->desc);
+      save_item->price = ((item_t*)tmp.p)->price;
+	  char *s = ((shelf_t*)tmp.p)->shelf_name;
+	  printf("%s\n", s);
+
+	  save_shelf->shelf_name = strdup(((shelf_t*)tmp.p)->shelf_name);
+      save_shelf->amount = ((shelf_t*)tmp.p)->amount;
+      printf("save_item->name = %s\n", save_item->name);
+      latest_action->copy = save_item;
+	  latest_action->shelf = save_shelf; 
+      printf("latest_action->shelf->amount = %d\n", save_shelf->amount);
+      //latest_action->shelf = new_shelf;
+
 	tree_remove(db, key_list[nr_to_remove], &result);
 	tree_apply(db, preorder, t_print_func, NULL);
+	
+
 	free(key_list);
 }
 
@@ -329,7 +354,7 @@ void print_desc(elem_t elem)
 
 elem_t edit_desc_aux(elem_t elem)
 {
-  char *tmp = ask_question_string("Ny beskrivning: ");
+ char *tmp = ask_question_string("Ny beskrivning: ");
   ((item_t*)elem.p)->desc = tmp;
   free(tmp);
   return elem;
@@ -532,7 +557,7 @@ void event_loop(tree_t *db, action_t *latest_action)
 				break;
 
 			case 'T' :                       // Delete
-				remove_item_from_db(db);
+				remove_item_from_db(db, latest_action);
 				break;
 
 			case 'R' :                       // Redigera
