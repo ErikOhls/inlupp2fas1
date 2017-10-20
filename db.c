@@ -4,11 +4,113 @@
 #include "common.h"
 #include "db_aux.h"
 
+///////////// ================= UNDO ACTION
+//////////
+///////
+////
+//
+
+typedef struct action
+{
+	int type;
+	item_t *merch;
+	item_t *copy;
+	shelf_t *shelf;
+
+}action_t;
+
+void undo_action(tree_t *db, action_t *latest_action) // * till &
+{
+	switch(latest_action -> type)
+		{
+		case 0:
+        	{
+	    		puts("Du har inget att Ângra/n");
+			}
+		break;
+		
+		case 1: //l‰gga till en vara sÂ vi tar bara bort shelfen. LA merch -> varan vi la till. bˆrja med att s‰tta type till 1 i l‰gga till.
+			{
+				char *s = latest_action->merch->name;
+				printf("%s", s);
+				//elem_t *to_remove = (elem_t*)latest_action;
+				//tree_key_t key = { .p = latest_action->merch->name };
+				//tree_remove(db, key, to_remove);
+				//free(to_remove);
+
+			}
+		break;
+		}
+}	
+/*
+		case 2: //s‰tt gammla itemet i copy och ‰ndra latest_action type till 2. s‰tt LA tree-> tr‰det vi anv‰nder
+			{
+                            // TA bort behˆvs inte ‰n
+				elem_t *to_reinsert = malloc(sizeof(elem_t));
+				*to_reinsert = latest_action -> copy;
+				tree_insert(latest_action->merch, to_reinsert->name, to_reinsert);	
+			}	
+		break;
+		}
+}
+
+
+		case 3: //Redigera varans pris. s‰tt LA merch -> varan vi redigerade(nya redigerade varan) s‰tt latest_action -> amoun ‰r gammla priset sedan s‰tter vi LA till 3.
+			{
+				set_item_price(latest_action -> merch, latest_action -> amount);
+			}
+		break;
+
+		case 4: //Redigera varans beskrivning. s‰tt LA merch -> den nya redigerade varan. LA -> string ‰r gammla beskrivningen. sen LA type -> 4.
+			{
+				free(get_item_description(latest_action -> merch));
+				set_item_description(latest_action -> merch, latest_action -> string);
+			}
+		break;
+
+		case 5: //ta bort en hylla. s‰tt LA merch -> nya redigerade varan. S‰tt LA location till den avrefrenserade sparar pointern i list remove. s‰tt LA type -> 5
+			{
+				list_append(get_item_locations(latest_action -> merch), latest_action -> location);
+			}
+		break;
+
+		case 6: //l‰gga till en hylla, S‰tt LA merch -> den nya redigerade varan. vi l‰gger till de sist sÂ vi tar bara bort den sista. S‰tt LA type -> 6
+			{
+   				location_t *toremove;
+   				list_remove(get_item_locations(latest_action->merch), -1,  &toremove);
+  				free(get_location_shelf(toremove));
+    			        free(toremove);
+			}
+		break;
+
+		case 7: //redigera en hyllas antal. s‰tt LA amount ska ha gammla antalet. LA location -> location vi modifierade- s‰tt LA 7
+			{
+				set_location_amount(latest_action->location, latest_action->amount);
+			}
+		break;
+
+		case 8: //redigera en hyllas plats. LA location -> location vi redigera. LA string ska vara den gammla hyllplatsen. S‰tt LA type -> 8 
+			{
+				free(get_location_shelf(latest_action -> location));
+   				set_location_shelf(latest_action -> location, latest_action -> string);
+			}
+		break;
+		}
+	latest_action -> type = 0;
+}
+
+
+
+*/
+
 //////////// ================= ITEM INPUT
 ///
 /// Functions for inputing items to db
 ///
-void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_name, int amount)
+//
+//
+
+void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_name, int amount, action_t *latest_action)
 {
   puts("making item\n");
   // Make shelf
@@ -53,7 +155,9 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
       elem_t result = {};
       tree_get(db, key, &result);
       list_append(((item_t*)result.p)->list, list_elem);
+	
 
+	  	//TODO: undo funktioner
       free(new_shelf);
       free(new_item);
       free(name);
@@ -81,6 +185,14 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
       new_item->list = list_new(l_copy_func, l_free_func, l_comp_func);
       list_append(new_item->list, list_elem);
       tree_insert(db, key, elem);
+
+	//	free_latest_action(latest_action);
+		latest_action->type = 1;
+		latest_action->merch = new_item;
+		latest_action->shelf = new_shelf;
+		int i = latest_action->merch->price;
+		printf("%d", i);
+
       free(new_shelf);
       free(new_item);
       free(name);
@@ -91,7 +203,7 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
     }
 }
 
-void input_item(tree_t *db)
+void input_item(tree_t *db, action_t *latest_action)
 {
 	char *name  = ask_question_string("Varans namn: ");
 	char *desc  = ask_question_string("Beskrivning av vara: ");
@@ -99,7 +211,7 @@ void input_item(tree_t *db)
 	char *shelf = ask_question_shelf("Varans hylla: ");
 	int amount  = ask_question_int("Varans antal: ");
 
-	add_item_to_db(db, name, desc, price, shelf, amount);
+	add_item_to_db(db, name, desc, price, shelf, amount, latest_action);
 
 	return;
 }
@@ -401,16 +513,18 @@ void event_loop_edit(tree_t *db /*undo*/ )
 }
 
 // -------------- Main menu ---------------
-void event_loop(tree_t *db)
-{ // TODO: Ångra stuff
+void event_loop(tree_t *db, action_t *latest_action)
+{
 	bool quit_v = true;
+
 	while(quit_v)
 	{
 		char option = ask_question_menu();
 		switch(option)
 		{
-			case 'L' :                       // Add item
-				input_item(db);
+			case 'L' :				// Add item
+
+				input_item(db, latest_action);
 				break;
 
 			case 'T' :                       // Delete
@@ -422,7 +536,7 @@ void event_loop(tree_t *db)
 				break;
 
 			case 'G' :                       // Undo
-				puts("Inte implementerat!");
+				undo_action(db, latest_action);
 				break;
 
 			case 'H' :                       // List DB
@@ -440,12 +554,12 @@ int main(int argc, char *argv[])
 	puts("Välkommen till database v2.0 av Erik och Mats\n\
 =============================================\n");
 	tree_t *db = tree_new(t_copy_func, t_free_key_func, t_free_elem_func, t_comp_func);
-
+	action_t latest_action = (action_t){ .type = 0 };
 	puts("insert\n");
 
 	direct_input(db);
 
-	event_loop(db);
+	event_loop(db, &latest_action);
 
 	puts("deleting tree\n");
 
