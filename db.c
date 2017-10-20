@@ -14,7 +14,7 @@ typedef struct action
 {
 	int type;
 	item_t *merch;
-	item_t *copy;
+	elem_t *copy;
 	shelf_t *shelf;
 
 }action_t;
@@ -31,9 +31,10 @@ void undo_action(tree_t *db, action_t *latest_action) // * till &
 		
 		case 1: //l‰gga till en vara sÂ vi tar bara bort shelfen. LA merch -> varan vi la till. bˆrja med att s‰tta type till 1 i l‰gga till.
 			{
+			//	elem_t tmp = { .p = latest_action->merch };
 				char *s = latest_action->merch->name;
 				printf("%s", s);
-				//elem_t *to_remove = (elem_t*)latest_action;
+				//elem_t *to_remove = (elem_t*)latest_action->merch;
 				//tree_key_t key = { .p = latest_action->merch->name };
 				//tree_remove(db, key, to_remove);
 				//free(to_remove);
@@ -41,6 +42,7 @@ void undo_action(tree_t *db, action_t *latest_action) // * till &
 			}
 		break;
 		}
+	latest_action->type = 0;
 }	
 /*
 		case 2: //s‰tt gammla itemet i copy och ‰ndra latest_action type till 2. s‰tt LA tree-> tr‰det vi anv‰nder
@@ -181,17 +183,18 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
 
   else
     {
+		
+	  free(latest_action->merch);
+		latest_action->type = 1;
+		item_t *tmp = calloc(1, sizeof(item_t));
+		tmp->name = new_item->name;
+		latest_action->merch = tmp;
+
       puts("inserting to tree\n");
       new_item->list = list_new(l_copy_func, l_free_func, l_comp_func);
       list_append(new_item->list, list_elem);
       tree_insert(db, key, elem);
 
-	//	free_latest_action(latest_action);
-		latest_action->type = 1;
-		latest_action->merch = new_item;
-		latest_action->shelf = new_shelf;
-		int i = latest_action->merch->price;
-		printf("%d", i);
 
       free(new_shelf);
       free(new_item);
@@ -554,7 +557,7 @@ int main(int argc, char *argv[])
 	puts("Välkommen till database v2.0 av Erik och Mats\n\
 =============================================\n");
 	tree_t *db = tree_new(t_copy_func, t_free_key_func, t_free_elem_func, t_comp_func);
-	action_t latest_action = (action_t){ .type = 0 };
+	action_t latest_action;	
 	puts("insert\n");
 
 	direct_input(db);
