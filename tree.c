@@ -27,6 +27,29 @@ struct tree{
 	element_comp_fun compare;
 
 };
+/// Replacement functions if non are given
+elem_t tree_no_copy(elem_t elem)
+{
+  return elem;
+}
+
+void tree_no_free(elem_t elem)
+{
+  return;
+}
+
+int tree_no_comp(elem_t elem, elem_t elem2)
+{
+  if(elem.i > elem2.i)
+    {
+      return 2;
+    }
+  if(elem.i < elem2.i)
+    {
+      return 1;
+    }
+  else return 0;
+}
 
 /// Creates a new tree
 ///
@@ -41,10 +64,10 @@ tree_t *tree_new(element_copy_fun element_copy, key_free_fun key_free, element_f
 
 	result->size = 0;
 
-	result->copy      = element_copy;
-	result->free_key  = key_free;
-	result->free_elem = elem_free;
-	result->compare   = compare;
+	result->copy      = (element_copy) ? element_copy : tree_no_copy;
+	result->free_key  = (key_free) ? key_free : tree_no_free;
+	result->free_elem = (elem_free) ? elem_free : tree_no_free;
+	result->compare   = (compare) ? compare : tree_no_comp;
 
 	return result;
 }

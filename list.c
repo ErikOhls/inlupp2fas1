@@ -22,6 +22,30 @@ struct list{
 
 	int size;
 };
+/// Replacement functions if non are given
+elem_t list_no_copy(elem_t elem)
+{
+  return elem;
+}
+
+void list_no_free(elem_t elem)
+{
+  return;
+}
+
+int list_no_comp(elem_t elem, elem_t elem2)
+{
+  if(elem.i > elem2.i)
+    {
+      return 2;
+    }
+  if(elem.i < elem2.i)
+    {
+      return 1;
+    }
+  else return 0;
+}
+
 /// Converts any number to a valid index
 int index_correction(list_t *list, int index)
 {
@@ -46,9 +70,9 @@ list_t *list_new(element_copy_fun copy, element_free_fun free, element_comp_fun 
 {
 	list_t *result = calloc(1, sizeof(list_t));
 
-	result->copy = copy;
-	result->free = free;
-	result->compare = compare;
+	result->copy = (copy) ? copy : list_no_copy;
+	result->free = (free) ? free : list_no_free;
+	result->compare = (compare) ? compare : list_no_comp;
 
 	result->size = 0;
 
@@ -222,7 +246,7 @@ bool list_first(list_t *list, elem_t *result)
 /// A convenience for list_get(list, -1, result)
 bool list_last(list_t *list, elem_t *result)
 {
-	return list_get(list, -1, result);
+	return list_get(list, list->size-1, result);
 }
 
 /// Returns the length of the list. It is undefined
