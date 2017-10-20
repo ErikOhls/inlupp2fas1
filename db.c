@@ -31,8 +31,10 @@ void undo_action(tree_t *db, action_t *latest_action) // * till &
 		
 		case 1: //l‰gga till en vara sÂ vi tar bara bort shelfen. LA merch -> varan vi la till. bˆrja med att s‰tta type till 1 i l‰gga till.
 			{
-				char *s = latest_action->merch->name;
-				printf("%s", s);
+        printf("copy name = %s\n", latest_action->copy->name);
+        free(latest_action->copy->name);
+        free(latest_action->copy);
+				//printf("%s", s);
 				//elem_t *to_remove = (elem_t*)latest_action;
 				//tree_key_t key = { .p = latest_action->merch->name };
 				//tree_remove(db, key, to_remove);
@@ -155,7 +157,6 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
       elem_t result = {};
       tree_get(db, key, &result);
       list_append(((item_t*)result.p)->list, list_elem);
-	
 
 	  	//TODO: undo funktioner
       free(new_shelf);
@@ -181,23 +182,30 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
 
   else
     {
-      puts("inserting to tree\n");
+      //Insert item
       new_item->list = list_new(l_copy_func, l_free_func, l_comp_func);
       list_append(new_item->list, list_elem);
       tree_insert(db, key, elem);
 
-	//	free_latest_action(latest_action);
-		latest_action->type = 1;
-		latest_action->merch = new_item;
-		latest_action->shelf = new_shelf;
-		int i = latest_action->merch->price;
-		printf("%d", i);
+      //Make copy for undo
+      latest_action->type = 1;
+      item_t *tmp = calloc(1, sizeof(item_t)); // FREE!
+      tmp->name = strdup(name);
+      tmp->desc = desc;
+      tmp->price = price;
+      printf("tmp->name = %s\n", tmp->name);
+      latest_action->copy = tmp;
+      printf("latest_action->copy->name = %s\n", latest_action->copy->name);
+      latest_action->shelf = new_shelf;
 
+      //Free callocs
       free(new_shelf);
       free(new_item);
       free(name);
       free(desc);
       free(shelf_name);
+
+      printf("latest_action->copy->name after free = %s\n", latest_action->copy->name);
 
       return;
     }
@@ -554,7 +562,7 @@ int main(int argc, char *argv[])
 	puts("Välkommen till database v2.0 av Erik och Mats\n\
 =============================================\n");
 	tree_t *db = tree_new(t_copy_func, t_free_key_func, t_free_elem_func, t_comp_func);
-	action_t latest_action = (action_t){ .type = 0 };
+	action_t latest_action;
 	puts("insert\n");
 
 	direct_input(db);
