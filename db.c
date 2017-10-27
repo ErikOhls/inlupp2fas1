@@ -3,6 +3,7 @@
 #include "list.h"
 #include "common.h"
 #include "db_aux.h"
+#include <stdlib.h>
 
 ///////////// ================= UNDO ACTION
 //////////
@@ -321,23 +322,23 @@ void remove_item_from_db(tree_t *db, action_t *latest_action)
 	tree_get(db, key_list[nr_to_remove], &tmp);
 	print_specific(tmp);
 	
-      latest_action->type = 1;
-      item_t *save_item = calloc(1, sizeof(item_t)); // FREE!
-	  shelf_t *save_shelf = calloc(1, sizeof(shelf_t));
+  latest_action->type = 1;
+  item_t *save_item = calloc(1, sizeof(item_t)); // FREE!
+  shelf_t *save_shelf = calloc(1, sizeof(shelf_t));
 
-      save_item->name = strdup(((item_t*)tmp.p)->name);
-      save_item->desc = strdup(((item_t*)tmp.p)->desc);
-      save_item->price = ((item_t*)tmp.p)->price;
-	  char *s = ((shelf_t*)tmp.p)->shelf_name;
-	  printf("%s\n", s);
+  save_item->name = strdup(((item_t*)tmp.p)->name);
+  save_item->desc = strdup(((item_t*)tmp.p)->desc);
+  save_item->price = ((item_t*)tmp.p)->price;
+  char *s = ((shelf_t*)tmp.p)->shelf_name;
+  printf("%s\n", s);
 
-	  save_shelf->shelf_name = strdup(((shelf_t*)tmp.p)->shelf_name);
-      save_shelf->amount = ((shelf_t*)tmp.p)->amount;
-      printf("save_item->name = %s\n", save_item->name);
-      latest_action->copy = save_item;
-	  latest_action->shelf = save_shelf; 
-      printf("latest_action->shelf->amount = %d\n", save_shelf->amount);
-      //latest_action->shelf = new_shelf;
+  save_shelf->shelf_name = strdup(((shelf_t*)tmp.p)->shelf_name);
+  save_shelf->amount = ((shelf_t*)tmp.p)->amount;
+  printf("save_item->name = %s\n", save_item->name);
+  latest_action->copy = save_item;
+  latest_action->shelf = save_shelf; 
+  printf("latest_action->shelf->amount = %d\n", save_shelf->amount);
+  //latest_action->shelf = new_shelf;
 
 	tree_remove(db, key_list[nr_to_remove], &result);
 	tree_apply(db, preorder, t_print_func, NULL);
@@ -433,8 +434,33 @@ void edit_shelf(tree_t *db, elem_t *to_edit)
       //Ändra hyllan
       if(existance)
         {
+          // Setup
           list_t *list = ((item_t*)to_edit->p)->list;
-          list_apply(list, change_shelf, &tmp_list_elem);
+          int i = list_contains(list, tmp_list_elem);
+
+          // Hitta och extrahera hylla
+          shelf_t *old_shelf = calloc(1, sizeof(shelf_t));
+          elem_t list_elem = { .p = old_shelf };
+          list_get(list, i, &list_elem);
+          int amount_copy = ((shelf_t*)list_elem.p)->amount;
+
+          // Skapa ny hylla
+          shelf_t *insert_shelf = calloc(1, sizeof(shelf_t));
+          list_elem.p = insert_shelf;
+
+          // Skapa värden på ny hylla
+          char *new_shelf_name = ask_question_shelf("Ny hylla: "); //TODO: Läcker minne
+          insert_shelf->shelf_name = new_shelf_name;
+          insert_shelf->amount = amount_copy;
+
+          // Fixa listan
+          list_remove(list, i, true);
+          list_append(list, list_elem);
+
+          free(old_shelf);
+          free(insert_shelf);
+          //free(new_shelf_name);   //TODO: Men namnet försvinner om man kör free
+
         }
       else
         {
@@ -496,6 +522,122 @@ void edit_amount(tree_t* db, elem_t *to_edit)
     }
   puts("Uppdaterad vara:\n");
   print_item(*to_edit);
+  return;
+}
+//////////// ================= PERSISTANCE
+///
+/// Functions for writing to and reading from text files
+// -------------- Write ---------------
+void save_shelfs(FILE *fptr, list_t *list)
+{
+  for(int i = 0; i < list_length(list); i++)
+    {
+      // Setup shelf to save
+      elem_t shelf_to_save;
+      list_get(list, i, &shelf_to_save);
+      char *name = ((shelf_t*)shelf_to_save.p)->shelf_name;
+      int iamount = ((shelf_t*)shelf_to_save.p)->amount;
+      char amount[255];
+      snprintf(amount, 255, "%d", iamount); // Convert int amount to char amount
+
+      // Write to file
+      fputs(name, fptr);
+      fputs("\n", fptr);
+
+      fputs(amount, fptr);
+      fputs("\n", fptr);
+    }
+  fputs("\n\n", fptr);
+  return;
+}
+
+void save_item(elem_t *elem_list, FILE *fptr, int db_size)
+{
+  if(fptr)
+    {
+      for(int i = 0; i < db_size; i++)
+        {
+          // Setup item to save
+          elem_t item_to_save = elem_list[i];
+          char *name = ((item_t*)item_to_save.p)->name;
+          char *desc = ((item_t*)item_to_save.p)->desc;
+          int iprice = ((item_t*)item_to_save.p)->price;
+          char price[255];
+          snprintf(price, 255, "%d", iprice); // Convert int price to char price
+
+          // Write to file
+          fputs(name, fptr);
+          fputs("\n", fptr);
+
+          fputs(desc, fptr);
+          fputs("\n", fptr);
+
+          fputs(price, fptr);
+          fputs("\n\n", fptr);
+
+          // Write shelfs to file
+          save_shelfs(fptr, ((item_t*)item_to_save.p)->list);
+        }
+    }
+  return;
+}
+
+void save_db(tree_t *db)
+{
+  elem_t *elem_list = tree_elements(db);
+
+  FILE *fptr;
+  fptr = fopen("db_persistance", "w");
+
+  save_item(elem_list, fptr, tree_size(db));
+
+  free(elem_list);
+  fclose(fptr);
+  return;
+}
+// -------------- Read ---------------
+void load_shelfs()
+{
+  return;
+}
+
+void load_item(tree_t *db, FILE *fptr, int db_size)
+{
+  size_t buf_siz = 255;
+  char *line = calloc(1, sizeof(char *));
+  for(int i = 0; i < db_size; i++)
+    {
+      puts("calloc new item\n");
+      item_t *new_item = calloc(1, sizeof(item_t));
+      puts("getting first line\n");
+      getline(&line, &buf_siz, fptr);               // Name
+      puts("assigning new item name\n");
+      new_item->name = line;
+      getline(&line, &buf_siz, fptr);               // Description
+      new_item->desc = line;
+      getline(&line, &buf_siz, fptr);               // Price
+      new_item->price = atoi(line);
+
+      elem_t elem = { .p = new_item };
+      tree_key_t key = { .p = new_item->name };
+
+      tree_insert(db, key, elem);
+    }
+  return;
+}
+
+void load_db(tree_t *db)
+{
+  FILE *fptr;
+  fptr = fopen("db_persistance", "r");
+  int db_size = 1;
+
+  if(fptr)
+    {
+      load_item(db, fptr, db_size);
+      fclose(fptr);
+    }
+  else puts("No file to load database from!");
   return;
 }
 
@@ -586,14 +728,19 @@ int main(int argc, char *argv[])
 
 	action_t latest_action;
 
-	puts("insert\n");
+	//direct_input(db);
 
-	direct_input(db);
+  load_db(db);
+
+  puts("printing tree preorder\n");
+
+  tree_apply(db, preorder, t_print_func, NULL);
 
 	event_loop(db, &latest_action);
 
-	puts("deleting tree\n");
-
+  puts("saving db to .txt...");
+  //save_db(db);
+	puts("deleting db...");
 	tree_delete(db, true, true);
 	puts("exit");
 	return 0;

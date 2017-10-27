@@ -527,7 +527,7 @@ tree_key_t *tree_elem_aux(node_t *cursor, elem_t *elem_array, int *i)
 	{
 		tree_elem_aux(cursor->left, elem_array, i);
 		*i = *i + 1;
-		elem_array[*i] = cursor->key;
+		elem_array[*i] = cursor->elem;
 		tree_elem_aux(cursor->right, elem_array, i);
 	}
 	return elem_array;

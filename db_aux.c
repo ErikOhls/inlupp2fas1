@@ -233,7 +233,7 @@ void direct_input(tree_t *db)
 
   item_t *new_item = calloc(1, sizeof(item_t));
   new_item->name = "test1";
-  new_item->desc = "test1";
+  new_item->desc = "testdesc1";
   new_item->price = 100;
 
   elem_t list_elem = { .p = new_shelf };
