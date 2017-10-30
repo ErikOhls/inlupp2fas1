@@ -530,6 +530,12 @@ void edit_amount(tree_t* db, elem_t *to_edit)
 // -------------- Write ---------------
 void save_shelfs(FILE *fptr, list_t *list)
 {
+  int nr_shelfs = list_length(list);        // Record nr of shelfs
+  char tmp[255];
+  snprintf(tmp, 255, "%d", nr_shelfs);
+  fputs(tmp, fptr);
+  fputs("\n", fptr);
+
   for(int i = 0; i < list_length(list); i++)
     {
       // Setup shelf to save
@@ -573,7 +579,7 @@ void save_item(elem_t *elem_list, FILE *fptr, int db_size)
           fputs("\n", fptr);
 
           fputs(price, fptr);
-          fputs("\n\n", fptr);
+          fputs("\n", fptr);
 
           // Write shelfs to file
           save_shelfs(fptr, ((item_t*)item_to_save.p)->list);
@@ -596,8 +602,41 @@ void save_db(tree_t *db)
   return;
 }
 // -------------- Read ---------------
-void load_shelfs()
+char *new_line_delete(char *line)
 {
+  int i = strlen(line) - 1;
+  line[i] = '\0';
+  return line;
+}
+
+void load_shelfs(FILE *fptr, elem_t *elem)
+{
+  size_t buf_siz = 255;
+  int list_size = 2;
+  char *line = calloc(1, sizeof(char *));
+  getline(&line, &buf_siz, fptr);     //Waste line. TODO: Ändra till list_size.
+  for(int i = 0; i < list_size; i++)
+    {
+      shelf_t *new_shelf = calloc(1, sizeof(shelf_t));
+
+      getline(&line, &buf_siz, fptr);               // Name
+      char *new_name = new_line_delete(strdup(line));
+      new_shelf->shelf_name = new_name;
+      getline(&line, &buf_siz, fptr);               // Amount
+      new_shelf->amount = atoi(line);
+
+      elem_t list_elem = { .p = new_shelf};
+
+      if(i == 0)                                    // Om första varvet, gör ny lista
+        {
+          ((item_t*)elem->p)->list = list_new(l_copy_func, l_free_func, l_comp_func);
+        }
+      list_append(((item_t*)elem->p)->list, list_elem);
+
+      free(new_name);
+      free(new_shelf);
+    }
+  free(line);
   return;
 }
 
@@ -607,22 +646,32 @@ void load_item(tree_t *db, FILE *fptr, int db_size)
   char *line = calloc(1, sizeof(char *));
   for(int i = 0; i < db_size; i++)
     {
-      puts("calloc new item\n");
       item_t *new_item = calloc(1, sizeof(item_t));
-      puts("getting first line\n");
+
       getline(&line, &buf_siz, fptr);               // Name
-      puts("assigning new item name\n");
-      new_item->name = line;
+      char *new_name = new_line_delete(strdup(line));
+      new_item->name = new_name;
+      printf("new_name = %s, line = %s", new_name, line);
       getline(&line, &buf_siz, fptr);               // Description
-      new_item->desc = line;
+      char *new_desc = new_line_delete(strdup(line));
+      new_item->desc = new_desc;
       getline(&line, &buf_siz, fptr);               // Price
       new_item->price = atoi(line);
 
       elem_t elem = { .p = new_item };
       tree_key_t key = { .p = new_item->name };
 
+      load_shelfs(fptr, &elem);
+
       tree_insert(db, key, elem);
+
+      // TODO:
+      //Hur få name/desc att "fastna" trots att man gör free? Varför funkar det vid input_item?
+      //free(new_name);
+      //free(new_desc);
+      free(new_item);
     }
+  free(line);
   return;
 }
 
@@ -728,9 +777,9 @@ int main(int argc, char *argv[])
 
 	action_t latest_action;
 
-	//direct_input(db);
+	direct_input(db);
 
-  load_db(db);
+  //load_db(db);
 
   puts("printing tree preorder\n");
 
@@ -739,7 +788,7 @@ int main(int argc, char *argv[])
 	event_loop(db, &latest_action);
 
   puts("saving db to .txt...");
-  //save_db(db);
+  save_db(db);
 	puts("deleting db...");
 	tree_delete(db, true, true);
 	puts("exit");
