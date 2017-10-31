@@ -54,7 +54,8 @@ void t_free_elem_func(elem_t elem)
         {
           list_delete(item->list, true);
         }
-
+      free(item->name);
+      free(item->desc);
       free(elem.p);
     }
   else return;
@@ -113,6 +114,7 @@ void l_free_func(elem_t elem)
 {
   if(elem.p != NULL)
     {
+      free(((shelf_t*)elem.p)->shelf_name);
       free(elem.p);
     }
   else return;

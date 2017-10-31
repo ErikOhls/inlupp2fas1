@@ -145,9 +145,11 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
 
       free(new_shelf);
       free(new_item);
+      /*
       free(name);
       free(desc);
       free(shelf_name);
+      */
 
       return;
     }
@@ -162,9 +164,11 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
 	  	//TODO: undo funktioner
       free(new_shelf);
       free(new_item);
+      /*
       free(name);
       free(desc);
       free(shelf_name);
+      */
 
       return;
     }
@@ -174,9 +178,11 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
       puts("Varahyllan är redan tagen! Försök igen\n");
       free(new_shelf);
       free(new_item);
+      /*
       free(name);
       free(desc);
       free(shelf_name);
+      */
 
       return;
     }
@@ -198,13 +204,16 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
       latest_action->copy = tmp;
       printf("latest_action->copy->name = %s\n", latest_action->copy->name);
       latest_action->shelf = new_shelf;
+      //free(tmp);
 
       //Free callocs
       free(new_shelf);
       free(new_item);
+      /*
       free(name);
       free(desc);
       free(shelf_name);
+      */
 
       printf("latest_action->copy->name after free = %s\n", latest_action->copy->name);
 
@@ -553,7 +562,7 @@ void save_shelfs(FILE *fptr, list_t *list)
       fputs(amount, fptr);
       fputs("\n", fptr);
     }
-  fputs("\n\n", fptr);
+  //fputs("\n\n", fptr);
   return;
 }
 
@@ -561,6 +570,11 @@ void save_item(elem_t *elem_list, FILE *fptr, int db_size)
 {
   if(fptr)
     {
+      //Convert and write db_size
+      char db_size_tmp[255];
+      snprintf(db_size_tmp, 255, "%d", db_size);
+      fputs(db_size_tmp, fptr);
+      fputs("\n", fptr);
       for(int i = 0; i < db_size; i++)
         {
           // Setup item to save
@@ -612,9 +626,10 @@ char *new_line_delete(char *line)
 void load_shelfs(FILE *fptr, elem_t *elem)
 {
   size_t buf_siz = 255;
-  int list_size = 2;
   char *line = calloc(1, sizeof(char *));
-  getline(&line, &buf_siz, fptr);     //Waste line. TODO: Ändra till list_size.
+  getline(&line, &buf_siz, fptr);
+  int list_size = atoi(line);
+
   for(int i = 0; i < list_size; i++)
     {
       shelf_t *new_shelf = calloc(1, sizeof(shelf_t));
@@ -633,17 +648,20 @@ void load_shelfs(FILE *fptr, elem_t *elem)
         }
       list_append(((item_t*)elem->p)->list, list_elem);
 
-      free(new_name);
+      //free(new_name);
       free(new_shelf);
     }
   free(line);
   return;
 }
 
-void load_item(tree_t *db, FILE *fptr, int db_size)
+void load_item(tree_t *db, FILE *fptr)
 {
   size_t buf_siz = 255;
   char *line = calloc(1, sizeof(char *));
+  getline(&line, &buf_siz, fptr);
+  int db_size = atoi(line);
+
   for(int i = 0; i < db_size; i++)
     {
       item_t *new_item = calloc(1, sizeof(item_t));
@@ -665,8 +683,6 @@ void load_item(tree_t *db, FILE *fptr, int db_size)
 
       tree_insert(db, key, elem);
 
-      // TODO:
-      //Hur få name/desc att "fastna" trots att man gör free? Varför funkar det vid input_item?
       //free(new_name);
       //free(new_desc);
       free(new_item);
@@ -679,11 +695,10 @@ void load_db(tree_t *db)
 {
   FILE *fptr;
   fptr = fopen("db_persistance", "r");
-  int db_size = 1;
 
   if(fptr)
     {
-      load_item(db, fptr, db_size);
+      load_item(db, fptr);
       fclose(fptr);
     }
   else puts("No file to load database from!");
@@ -777,9 +792,9 @@ int main(int argc, char *argv[])
 
 	action_t latest_action;
 
-	direct_input(db);
+	//direct_input(db);
 
-  //load_db(db);
+  load_db(db);
 
   puts("printing tree preorder\n");
 
