@@ -366,7 +366,7 @@ elem_t edit_desc_aux(elem_t elem)
 {
  char *tmp = ask_question_string("Ny beskrivning: ");
   ((item_t*)elem.p)->desc = tmp;
-  free(tmp);
+  //free(tmp);
   return elem;
 }
 
