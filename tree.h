@@ -9,8 +9,6 @@ typedef struct tree tree_t;
 typedef elem_t tree_key_t;
 typedef element_free_fun key_free_fun;
 
-typedef struct tree tree_t;
-
 /// Creates a new tree
 ///
 /// \param copy (may be NULL) a function applied to all elements when stored in the tree
