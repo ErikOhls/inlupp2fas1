@@ -20,6 +20,17 @@ list_t *list_copy(list_t *list)
   return list_copy;
 }
 
+item_t *item_copy(item_t *to_copy)
+{
+  item_t *result = calloc(1, sizeof(item_t));
+  result->name = strdup(to_copy->name);
+  result->desc = strdup(to_copy->desc);
+  result->price = to_copy->price;
+  result->list = list_copy(to_copy->list);
+
+  return to_copy;
+}
+
 ///////////// ================= UNDO ACTION
 //////////
 ///////
@@ -47,17 +58,29 @@ void free_action(action_t *latest_action)
         {
           free(latest_action->merch->desc);
         }
+      if(latest_action->merch->list)
+        {
+          list_delete(latest_action->merch->list, true);
+        }
       free(latest_action->merch);
     }
   if(latest_action->copy)
     {
+      puts("free copy\n");
       if(latest_action->copy->name)
         {
+          puts("free copy name\n");
           free(latest_action->copy->name);
         }
       if(latest_action->copy->desc)
         {
+          puts("free copy desc\n");
           free(latest_action->copy->desc);
+        }
+      if(latest_action->copy->list)
+        {
+          puts("free copy list\n");
+          list_delete(latest_action->copy->list, true);
         }
       free(latest_action->copy);
     }
@@ -96,128 +119,87 @@ void undo_edit_price(elem_t *to_edit, action_t *latest_action)
 void undo_action(tree_t *db, action_t *latest_action) // * till &
 {
 	switch(latest_action -> type)
-	{
+    {
 		case 0:
 			{
 				puts("Du har inget att Ângra\n");
 			}
 			break;
 
-		case 1: //l‰gga till en vara sÂ vi tar bara bort shelfen. LA merch -> varan vi la till. bˆrja med att s‰tta type till 1 i l‰gga till.
+		case 1: // Undo add item
 			{
-				elem_t elem;
-				tree_key_t key = { .p = latest_action->copy->name };
-				tree_remove(db, key, &elem); 
-				//free(latest_action->copy->name);
-				free(latest_action->copy);
-
+        puts("Ej implementerat\n");
+        /*
+        tree_key_t key = { .p = latest_action->copy->name };
+        elem_t result = {};
+        tree_remove(db, key, &result);
+				free_action(latest_action);
+        */
 			}
 			break;
 
 
-		case 2: //s‰tt gammla itemet i copy och ‰ndra latest_action type till 2. s‰tt LA tree-> tr‰det vi anv‰nder
+		case 2: // Undo remove item
 			{
-
-				elem_t elem;
-				tree_key_t key = { .p = latest_action->copy->name };
-				//	elem_t *to_reinsert = malloc(sizeof(elem_t));
-				//	*to_reinsert = latest_action -> copy;
-				//	tree_insert(latest_action->merch, to_reinsert->name, to_reinsert);
-				tree_insert(db, key, elem);
-				free(latest_action->copy);
+        puts("Ej implementerat\n");
 			}
 			break;
 
-		case 3: //Redigera varans pris. s‰tt LA merch -> varan vi redigerade(nya redigerade varan) s‰tt latest_action -> amoun ‰r gammla priset sedan s‰tter vi LA till 3.
-			{
+    case 3: // Undo price
+      {
         // Setup
-				elem_t to_edit = {};
-				tree_key_t key = { .p = latest_action->copy->name };
-				tree_get(db, key, &to_edit);
+        elem_t to_edit = {};
+        tree_key_t key = { .p = latest_action->copy->name };
+        tree_get(db, key, &to_edit);
 
         // Återställ pris
-				undo_edit_price(&to_edit, latest_action);
+        undo_edit_price(&to_edit, latest_action);
 
         // Frigör minne
         free(latest_action->copy->name);
         free(latest_action->copy);
-			}
-			break;
+      }
+      break;
 
-		case 4: //Redigera varans beskrivning. s‰tt LA merch -> den nya redigerade varan. LA -> string ‰r gammla beskrivningen. sen LA type -> 4.
-			{
+    case 4: // Undo description
+      {
         // Setup
-				elem_t to_edit = {};
-				tree_key_t key = { .p = latest_action->copy->name };
-				tree_get(db, key, &to_edit);
+        elem_t to_edit = {};
+        tree_key_t key = { .p = latest_action->copy->name };
+        tree_get(db, key, &to_edit);
 
         // Frigör gamla description
         item_t *tmp = ((item_t*)to_edit.p);
         free(tmp->desc);
 
         // Återställ desc
-				undo_edit_desc(&to_edit, latest_action);
+        undo_edit_desc(&to_edit, latest_action);
 
         // Frigör minne
-				free(latest_action->copy->name);
-				free(latest_action->copy->desc);
-				free(latest_action->copy);
-			}
+        free(latest_action->copy->name);
+        free(latest_action->copy->desc);
+        free(latest_action->copy);
+      }
 			break;
-  case 5:
-    {
-      // Setup
-      elem_t to_edit = {};
-      tree_key_t key = { .p = latest_action->copy->name };
-      tree_get(db, key, &to_edit);
-      item_t *item_edit = ((item_t*)to_edit.p);
+    case 5: // Undo shelf / shelf amount
+      {
+        // Setup
+        elem_t to_edit = {};
+        tree_key_t key = { .p = latest_action->copy->name };
+        tree_get(db, key, &to_edit);
+        item_t *item_edit = ((item_t*)to_edit.p);
 
-      // Återställ hylla
-      list_delete(item_edit->list, true);
-      item_edit->list = list_copy(latest_action->shelf_list);
+        // Återställ lista
+        list_delete(item_edit->list, true);
+        item_edit->list = list_copy(latest_action->shelf_list);
 
-      // Frigör minne
-      list_delete(latest_action->shelf_list, true);
+        // Frigör minne
+        list_delete(latest_action->shelf_list, true);
+      }
+      break;
     }
-    break;
-	}
 	latest_action->type = 0;
 }
-/*
-   case 5: //ta bort en hylla. s‰tt LA merch -> nya redigerade varan. S‰tt LA location till den avrefrenserade sparar pointern i list remove. s‰tt LA type -> 5
-   {
-   list_append(get_item_locations(latest_action -> merch), latest_action -> location);
-   }
-   break;
-   /*
-   case 6: //l‰gga till en hylla, S‰tt LA merch -> den nya redigerade varan. vi l‰gger till de sist sÂ vi tar bara bort den sista. S‰tt LA type -> 6
-   {
-   location_t *toremove;
-   list_remove(get_item_locations(latest_action->merch), -1,  &toremove);
-   free(get_location_shelf(toremove));
-   free(toremove);
-   }
-   break;
-
-   case 7: //redigera en hyllas antal. s‰tt LA amount ska ha gammla antalet. LA location -> location vi modifierade- s‰tt LA 7
-   {
-   set_location_amount(latest_action->location, latest_action->amount);
-   }
-   break;
-
-   case 8: //redigera en hyllas plats. LA location -> location vi redigera. LA string ska vara den gammla hyllplatsen. S‰tt LA type -> 8 
-   {
-   free(get_location_shelf(latest_action -> location));
-   set_location_shelf(latest_action -> location, latest_action -> string);
-   }
-   break;
-   }
-   latest_action -> type = 0;
-   }
-
-
-
-*/
 
 //////////// ================= ITEM INPUT
 ///
@@ -258,11 +240,6 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
 
 		free(new_shelf);
 		free(new_item);
-		/*
-		   free(name);
-		   free(desc);
-		   free(shelf_name);
-		   */
 
 		return;
 	}
@@ -274,14 +251,8 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
 		tree_get(db, key, &result);
 		list_append(((item_t*)result.p)->list, list_elem);
 
-		//TODO: undo funktioner
 		free(new_shelf);
 		free(new_item);
-		/*
-		   free(name);
-		   free(desc);
-		   free(shelf_name);
-		   */
 
 		return;
 	}
@@ -291,11 +262,6 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
 		puts("Varahyllan är redan tagen! Försök igen\n");
 		free(new_shelf);
 		free(new_item);
-		/*
-		   free(name);
-		   free(desc);
-		   free(shelf_name);
-		   */
 
 		return;
 	}
@@ -308,27 +274,13 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
 		tree_insert(db, key, elem);
 
 		//Make copy for undo
-		latest_action->type = 1;
-		item_t *tmp = calloc(1, sizeof(item_t)); // FREE!
-		tmp->name = strdup(name);
-		tmp->desc = desc;
-		tmp->price = price;
-		printf("tmp->name = %s\n", tmp->name);
-		latest_action->copy = tmp;
-		printf("latest_action->copy->name = %s\n", latest_action->copy->name);
-		//latest_action->shelf = new_shelf;
-		//free(tmp);
+    free_action(latest_action);
+    latest_action->type = 1;
+    latest_action->copy = item_copy(new_item);
 
 		//Free callocs
 		free(new_shelf);
-		free(new_item);
-		/*
-		   free(name);
-		   free(desc);
-		   free(shelf_name);
-		   */
-
-		printf("latest_action->copy->name after free = %s\n", latest_action->copy->name);
+		free(new_item);    // copy->name försvinner här!?
 
 		return;
 	}
@@ -636,12 +588,16 @@ bool change_amount(elem_t original, void *new)
 }
 
 
-void edit_amount(tree_t* db, elem_t *to_edit)
+void edit_amount(tree_t* db, elem_t *to_edit, action_t *latest_action)
 {
 	puts("Nuvarande hyllor: \n");
 	puts("--------------------------------");
 	print_shelflist(*to_edit);
 	puts("--------------------------------\n");
+
+  // Undo
+  free_action(latest_action);
+  latest_action->type = 5;
 
 	bool existance = false;
 	while(!existance)
@@ -658,7 +614,15 @@ void edit_amount(tree_t* db, elem_t *to_edit)
 		//Ändra hyllan
 		if(existance)
 		{
+      // Setup
 			list_t *list = ((item_t*)to_edit->p)->list;
+
+      // Undo
+      list_t *old_list = list_copy(list);
+      latest_action->shelf_list = old_list;
+      latest_action->copy = ((item_t*)to_edit->p);
+
+      // Ändra listan
 			list_apply(list, change_amount, &tmp_list_elem);
 		}
 		else
@@ -876,7 +840,7 @@ void event_loop_edit(tree_t *db, action_t *latest_action )
 				break;
 
 			case 'T' :                       // Antal
-				edit_amount(db, &to_edit);
+				edit_amount(db, &to_edit, latest_action);
 				break;
 
 			case 'A' :                       // Avbryt
