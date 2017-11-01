@@ -20,6 +20,37 @@ typedef struct action
 
 }action_t;
 
+void free_action(action_t *latest_action)
+{
+  if(latest_action->merch)
+    {
+      puts("latest_action->merch exists");
+      if(latest_action->merch->name)
+        {
+          puts("merch->name exists. Freeing");
+          free(latest_action->merch->name);
+        }
+      if(latest_action->merch->desc)
+        {
+          free(latest_action->merch->desc);
+        }
+      free(latest_action->merch);
+    }
+  if(latest_action->copy)
+    {
+      puts("latest_action->copy exists");
+      if(latest_action->copy->name)
+        {
+          free(latest_action->copy->name);
+        }
+      if(latest_action->copy->desc)
+        {
+          free(latest_action->copy->desc);
+        }
+      free(latest_action->copy);
+    }
+}
+
 elem_t undo_edit_desc_aux(elem_t elem, action_t *latest_action)
 {
 	char *tmp = latest_action->copy->desc;
@@ -99,6 +130,10 @@ void undo_action(tree_t *db, action_t *latest_action) // * till &
 				elem_t to_edit = {};
 				tree_key_t key = { .p = latest_action->copy->name };
 				tree_get(db, key, &to_edit);
+
+        // Frigör gamla description
+        item_t *tmp = ((item_t*)to_edit.p);
+        free(tmp->desc);
 
 				undo_edit_desc(&to_edit, latest_action);
 				free(latest_action->copy->name);
@@ -400,12 +435,12 @@ void remove_item_from_db(tree_t *db, action_t *latest_action)
 // -------------- edit desc ---------------
 void print_desc(elem_t elem, action_t *latest_action)
 {
-	char *name = ((item_t*)elem.p)->name;
-	char *desc = ((item_t*)elem.p)->desc;
-	printf("Nuvarande beskrivning: %s\n", ((item_t*)elem.p)->name);
+  char *name = ((item_t*)elem.p)->name;
+  char *desc = ((item_t*)elem.p)->desc;
+	printf("Nuvarande beskrivning: %s\n", ((item_t*)elem.p)->desc);
 	latest_action->type = 4;
 	item_t *tmp = calloc(1, sizeof(item_t));
-	tmp->name = strdup(name);
+  tmp->name = strdup(name);
 	tmp->desc = strdup(desc);
 	latest_action->copy = tmp;
 }
@@ -846,7 +881,7 @@ int main(int argc, char *argv[])
 			=============================================\n");
 	tree_t *db = tree_new(t_copy_func, t_free_key_func, t_free_elem_func, t_comp_func);
 
-	action_t latest_action;
+	action_t *latest_action = calloc(1, sizeof(action_t));
 
 	//direct_input(db);
 
@@ -856,10 +891,13 @@ int main(int argc, char *argv[])
 
 	tree_apply(db, preorder, t_print_func, NULL);
 
-	event_loop(db, &latest_action);
+	event_loop(db, latest_action);
 
 	puts("saving db to .txt...");
 	save_db(db);
+  puts("Clearing undo buffer...");
+  free_action(latest_action);
+  free(latest_action);
 	puts("deleting db...");
 	tree_delete(db, true, true);
 	puts("exit");
