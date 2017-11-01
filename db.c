@@ -23,7 +23,7 @@ typedef struct action
 elem_t undo_edit_desc_aux(elem_t elem, action_t *latest_action)
 {
 	char *tmp = latest_action->copy->desc;
-	((item_t*)elem.p)->desc = tmp;
+	((item_t*)elem.p)->desc = strdup(tmp);
 	return elem;
 }
 
@@ -71,21 +71,20 @@ void undo_action(tree_t *db, action_t *latest_action) // * till &
 		case 2: //s‰tt gammla itemet i copy och ‰ndra latest_action type till 2. s‰tt LA tree-> tr‰det vi anv‰nder
 			{
 
-				elem_t elem;	
+				elem_t elem;
 				tree_key_t key = { .p = latest_action->copy->name };
 				//	elem_t *to_reinsert = malloc(sizeof(elem_t));
 				//	*to_reinsert = latest_action -> copy;
 				//	tree_insert(latest_action->merch, to_reinsert->name, to_reinsert);
 				tree_insert(db, key, elem);
 				free(latest_action->copy);
-			}	
+			}
 			break;
 
 		case 3: //Redigera varans pris. s‰tt LA merch -> varan vi redigerade(nya redigerade varan) s‰tt latest_action -> amoun ‰r gammla priset sedan s‰tter vi LA till 3.
 			{
 				elem_t to_edit = {};
 				tree_key_t key = { .p = latest_action->copy->name };
-				tree_key_t *key_list = tree_keys(db);
 				tree_get(db, key, &to_edit);
 
 				undo_edit_price(&to_edit, latest_action);
@@ -99,12 +98,11 @@ void undo_action(tree_t *db, action_t *latest_action) // * till &
 			{
 				elem_t to_edit = {};
 				tree_key_t key = { .p = latest_action->copy->name };
-				tree_key_t *key_list = tree_keys(db);
 				tree_get(db, key, &to_edit);
 
 				undo_edit_desc(&to_edit, latest_action);
-				//free(latest_action->copy->name);
-				//free(latest_action->copy->desc);
+				free(latest_action->copy->name);
+				free(latest_action->copy->desc);
 				free(latest_action->copy);
 			}
 			break;
@@ -410,12 +408,12 @@ void print_desc(elem_t elem, action_t *latest_action)
 	tmp->name = strdup(name);
 	tmp->desc = strdup(desc);
 	latest_action->copy = tmp;
-	
 }
 
 elem_t edit_desc_aux(elem_t elem)
 {
 	char *tmp = ask_question_string("Ny beskrivning: ");
+  free(((item_t*)elem.p)->desc);
 	((item_t*)elem.p)->desc = tmp;
 	return elem;
 }
@@ -861,7 +859,7 @@ int main(int argc, char *argv[])
 	event_loop(db, &latest_action);
 
 	puts("saving db to .txt...");
-	//save_db(db);
+	save_db(db);
 	puts("deleting db...");
 	tree_delete(db, true, true);
 	puts("exit");
