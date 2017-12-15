@@ -28,7 +28,7 @@ item_t *item_copy(item_t *to_copy)
   result->price = to_copy->price;
   result->list = list_copy(to_copy->list);
 
-  return to_copy;
+  return result;
 }
 
 ///////////// ================= UNDO ACTION
@@ -66,20 +66,16 @@ void free_action(action_t *latest_action)
     }
   if(latest_action->copy)
     {
-      puts("free copy\n");
       if(latest_action->copy->name)
         {
-          puts("free copy name\n");
           free(latest_action->copy->name);
         }
       if(latest_action->copy->desc)
         {
-          puts("free copy desc\n");
           free(latest_action->copy->desc);
         }
       if(latest_action->copy->list)
         {
-          puts("free copy list\n");
           list_delete(latest_action->copy->list, true);
         }
       free(latest_action->copy);
@@ -262,7 +258,7 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
 		puts("Varahyllan är redan tagen! Försök igen\n");
 		free(new_shelf);
 		free(new_item);
-
+    
 		return;
 	}
 
@@ -280,7 +276,7 @@ void add_item_to_db(tree_t *db, char *name, char *desc, int price, char *shelf_n
 
 		//Free callocs
 		free(new_shelf);
-		free(new_item);    // copy->name försvinner här!?
+		free(new_item);
 
 		return;
 	}
@@ -772,8 +768,7 @@ void load_item(tree_t *db, FILE *fptr)
 		getline(&line, &buf_siz, fptr);               // Name
 		char *new_name = new_line_delete(strdup(line));
 		new_item->name = new_name;
-		printf("new_name = %s, line = %s", new_name, line);
-		getline(&line, &buf_siz, fptr);               // Description
+    getline(&line, &buf_siz, fptr);               // Description
 		char *new_desc = new_line_delete(strdup(line));
 		new_item->desc = new_desc;
 		getline(&line, &buf_siz, fptr);               // Price
@@ -889,8 +884,7 @@ void event_loop(tree_t *db, action_t *latest_action)
 }
 int main(int argc, char *argv[])
 {
-	puts("Välkommen till database v2.0 av Erik och Mats\n\
-			=============================================\n");
+	puts("Välkommen till database v2.0 av Erik och Mats\n=============================================\n");
 	tree_t *db = tree_new(t_copy_func, t_free_key_func, t_free_elem_func, t_comp_func);
 
 	action_t *latest_action = calloc(1, sizeof(action_t));
@@ -899,9 +893,9 @@ int main(int argc, char *argv[])
 
 	load_db(db);
 
-	puts("printing tree preorder\n");
+	//puts("printing tree preorder\n");
 
-	tree_apply(db, preorder, t_print_func, NULL);
+	//tree_apply(db, preorder, t_print_func, NULL);
 
 	event_loop(db, latest_action);
 
